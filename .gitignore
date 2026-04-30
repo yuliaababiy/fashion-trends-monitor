@@ -39,3 +39,5 @@ reports/figures/
 .azure_*
 .acr_*
 .webhook_secret
+
+deploy_bot.ps1
