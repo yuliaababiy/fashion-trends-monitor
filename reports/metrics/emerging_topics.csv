@@ -1,21 +1,21 @@
 topic_id,keywords,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
-6,"like, say, feel, people, clothe, think, time, dress, year, thing, new, know, work, love, want",15.62,4.5,247.2,14.54,-6.9,Stable,LSTM
-17,,9.88,2.15,358.5,6.71,-32.0,Declining,LSTM
-11,"dress, like, feel, shirt, skirt, good, day, year, new, way, trouser, work, think, time, clothe",13.38,2.88,363.7,7.41,-44.6,Declining,LSTM
-2,"say, designer, year, brand, collection, dress, new, week, design, paris, work, chanel, london, catwalk, art",8.75,1.04,742.6,3.81,-56.5,Declining,LSTM
-5,"say, like, year, brand, people, include, item, store, new, know, dress, good, sell, australian, week",15.0,4.35,245.1,6.27,-58.2,Declining,LSTM
-0,"say, shirt, jean, trend, brand, year, like, dress, man, new, high, time, pair, way, short",44.12,8.54,416.8,17.32,-60.8,Declining,LSTM
-9,"shoe, bag, jacket, like, coat, pair, short, leather, day, shirt, boot, summer, year, heel, say",17.75,2.15,724.1,5.14,-71.1,Declining,LSTM
-7,"say, model, brand, year, vogue, new, like, black, people, work, designer, industry, bag, include, cover",23.12,2.23,936.6,5.27,-77.2,Declining,LSTM
-15,,62.0,7.38,739.6,8.65,-86.1,Declining,LSTM
-8,"skin, product, beauty, good, makeup, hair, face, like, use, say, skincare, time, lip, cream, brand",6.38,0.23,2662.5,0.82,-87.1,Declining,LSTM
-4,"hair, say, people, like, tattoo, time, year, woman, work, think, get, man, want, feel, new",97.5,11.38,756.4,10.75,-89.0,Declining,LSTM
-10,"char, culture, arts, gap, cottagecore, spring, streetwear, new, olivia, rodrigo, coachella, garden, weekend, sneaker, wa",4.38,0.5,775.0,0.38,-91.3,Declining,LSTM
-19,,12.62,1.19,958.9,1.08,-91.5,Declining,LSTM
-16,,6.88,0.27,2453.6,0.43,-93.7,Declining,LSTM
-13,,13.5,0.92,1362.5,0.73,-94.6,Declining,LSTM
-12,,11.0,0.88,1143.5,0.47,-95.7,Declining,LSTM
-14,,13.25,1.31,913.2,0.53,-96.0,Declining,LSTM
-1,"say, brand, people, year, new, design, work, company, industry, bag, like, product, material, sustainable, change",19.38,2.12,815.9,0.63,-96.8,Declining,LSTM
-18,,17.5,1.38,1163.9,0.4,-97.7,Declining,LSTM
-3,"char, new, year, say, brand, campbell, perfume, know, scent, book, coat, fragrance, good, feel, charity",16.75,1.35,1144.3,0.1,-99.4,Declining,LSTM
+6,"like, say, feel, people, clothe, think, time, dress, year, thing, new, know, work, love, want",15.75,4.73,232.9,15.09,-4.2,Stable,LSTM
+17,,10.25,2.08,393.5,6.31,-38.4,Declining,LSTM
+2,"say, designer, year, brand, collection, dress, new, week, design, paris, work, chanel, london, catwalk, art",8.62,0.96,797.0,4.88,-43.4,Declining,LSTM
+11,"dress, like, feel, shirt, skirt, good, day, year, new, way, trouser, work, think, time, clothe",13.38,2.81,376.4,7.02,-47.5,Declining,LSTM
+5,"say, like, year, brand, people, include, item, store, new, know, dress, good, sell, australian, week",15.38,4.31,256.9,6.63,-56.9,Declining,LSTM
+0,"say, shirt, jean, trend, brand, year, like, dress, man, new, high, time, pair, way, short",43.38,8.88,388.2,16.06,-63.0,Declining,LSTM
+18,,17.75,1.5,1083.3,4.0,-77.5,Declining,LSTM
+9,"shoe, bag, jacket, like, coat, pair, short, leather, day, shirt, boot, summer, year, heel, say",18.12,1.96,824.0,3.93,-78.3,Declining,LSTM
+10,"char, culture, arts, gap, cottagecore, spring, streetwear, new, olivia, rodrigo, coachella, garden, weekend, sneaker, wa",4.38,0.62,610.9,0.87,-80.2,Declining,LSTM
+7,"say, model, brand, year, vogue, new, like, black, people, work, designer, industry, bag, include, cover",22.5,2.27,891.5,4.04,-82.1,Declining,LSTM
+1,"say, brand, people, year, new, design, work, company, industry, bag, like, product, material, sustainable, change",19.38,2.12,815.9,2.79,-85.6,Declining,LSTM
+19,,13.0,1.12,1065.5,1.78,-86.3,Declining,LSTM
+15,,61.5,7.27,746.0,8.29,-86.5,Declining,LSTM
+8,"skin, product, beauty, good, makeup, hair, face, like, use, say, skincare, time, lip, cream, brand",6.5,0.19,3280.0,0.6,-90.7,Declining,LSTM
+16,,6.88,0.35,1886.1,0.62,-91.0,Declining,LSTM
+4,"hair, say, people, like, tattoo, time, year, woman, work, think, get, man, want, feel, new",98.25,11.31,768.9,8.74,-91.1,Declining,LSTM
+13,,13.25,0.96,1278.0,0.94,-92.9,Declining,LSTM
+12,,11.0,0.92,1091.7,0.5,-95.4,Declining,LSTM
+14,,13.38,1.23,986.7,0.56,-95.8,Declining,LSTM
+3,"char, new, year, say, brand, campbell, perfume, know, scent, book, coat, fragrance, good, feel, charity",16.62,1.27,1209.8,0.46,-97.2,Declining,LSTM
