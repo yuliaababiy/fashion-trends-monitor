@@ -1,0 +1,13 @@
+topic_id,keywords,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
+9,"shoe, bag, jacket, like, coat, pair, short, leather, day, shirt, boot, summer, year, heel, say",23.75,5.0,375.0,16.54,-30.3,Declining,LSTM
+8,"skin, product, beauty, good, makeup, hair, face, like, use, say, skincare, time, lip, cream, brand",6.38,1.15,452.5,1.25,-80.3,Declining,LSTM
+10,"char, culture, arts, gap, cottagecore, spring, streetwear, new, olivia, rodrigo, coachella, garden, weekend, sneaker, wa",32.0,2.35,1263.9,4.5,-85.9,Declining,LSTM
+2,"say, designer, year, brand, collection, dress, new, week, design, paris, work, chanel, london, catwalk, art",21.0,3.62,480.9,1.72,-91.8,Declining,LSTM
+3,"char, new, year, say, brand, campbell, perfume, know, scent, book, coat, fragrance, good, feel, charity",37.38,1.46,2457.2,2.73,-92.7,Declining,LSTM
+5,"say, like, year, brand, people, include, item, store, new, know, dress, good, sell, australian, week",16.75,1.04,1513.0,1.13,-93.2,Declining,LSTM
+6,"like, say, feel, people, clothe, think, time, dress, year, thing, new, know, work, love, want",20.88,1.73,1106.1,1.37,-93.5,Declining,LSTM
+0,"say, shirt, jean, trend, brand, year, like, dress, man, new, high, time, pair, way, short",16.88,1.77,853.8,0.85,-95.0,Declining,LSTM
+7,"say, model, brand, year, vogue, new, like, black, people, work, designer, industry, bag, include, cover",17.88,1.15,1449.2,0.82,-95.4,Declining,LSTM
+11,"dress, like, feel, shirt, skirt, good, day, year, new, way, trouser, work, think, time, clothe",17.12,2.46,595.7,0.73,-95.7,Declining,LSTM
+4,"hair, say, people, like, tattoo, time, year, woman, work, think, get, man, want, feel, new",10.75,0.96,1018.0,0.36,-96.7,Declining,LSTM
+1,"say, brand, people, year, new, design, work, company, industry, bag, like, product, material, sustainable, change",24.75,0.73,3286.8,0.77,-96.9,Declining,LSTM

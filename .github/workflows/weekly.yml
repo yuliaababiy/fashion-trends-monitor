@@ -1,0 +1,61 @@
+name: Weekly retrain
+
+on:
+  schedule:
+    - cron: "0 20 * * 0"    # 20:00 UTC every Sunday
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-retrain
+  cancel-in-progress: false
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONIOENCODING: utf-8
+      GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+      NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_ALLOWED_CHATS: ${{ secrets.TELEGRAM_ALLOWED_CHATS }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m spacy download en_core_web_sm
+
+      - name: Run weekly retrain (full LDA + forecasts)
+        run: python -m src.monitor.daily --retrain-lda
+
+      - name: Notify Telegram
+        if: success()
+        run: python -m src.alerts.telegram --send "🛠 *Weekly retrain complete* — model and forecasts refreshed."
+        continue-on-error: true
+
+      - name: Commit updated data + model
+        run: |
+          git config user.name  "trend-monitor-bot"
+          git config user.email "trend-monitor-bot@users.noreply.github.com"
+          git add data/raw/*.parquet data/processed/* \
+                  data/interim/*.parquet \
+                  reports/metrics/*.csv reports/state/*.csv \
+                  reports/state/*.json models/*.pkl || true
+          if git diff --staged --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore(weekly): retrain [skip ci]"
+            git push
+          fi

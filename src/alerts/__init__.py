@@ -1,0 +1,1 @@
+"""Telegram alerting module."""
