@@ -1,33 +1,7 @@
-# Core
+# Minimal requirements for Streamlit Cloud (UI only, no training)
+# The dashboard reads pre-computed parquet/csv files from the repo.
+streamlit>=1.32
 pandas>=2.1,<3
 numpy>=1.26,<2
-python-dotenv>=1.0
-tqdm>=4.66
 pyarrow>=14.0
-requests>=2.31
-urllib3<2
-
-# NLP
-spacy>=3.7,<4
-nltk>=3.8
-langdetect>=1.0.9
-emoji>=2.10
-regex>=2023.10
-
-# Topic modeling (LDA only)
-gensim>=4.3,<5
-
-# Time series & forecasting
-statsmodels>=0.14
-prophet>=1.1.5
-xgboost>=2.0
-scikit-learn>=1.4
-torch>=2.2
-
-# Visualization & dashboard
-matplotlib>=3.8
 plotly>=5.18
-streamlit>=1.32
-
-# Google Trends (optional, used locally)
-pytrends>=4.9

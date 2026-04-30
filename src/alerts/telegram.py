@@ -143,15 +143,18 @@ def _save_muted(s: set[int]) -> None:
 # Command handlers
 # ---------------------------------------------------------------------------
 HELP_TEXT = (
-    "*Fashion Trend Monitor*\n\n"
-    "Available commands:\n"
-    "  /trends — top Rising topics\n"
-    "  /topic <id> — details for a topic\n"
-    "  /status — pipeline freshness\n"
-    "  /run — trigger daily collection now\n"
-    "  /retrain — trigger weekly retrain\n"
-    "  /mute, /unmute — toggle alerts for this chat\n"
+    "*👗 Моніторинг модних трендів*\n\n"
+    "Доступні команди:\n"
+    "  /trends — топ тем, що зростають\n"
+    "  /topic <id> — деталі певної теми\n"
+    "  /status — свіжість даних пайплайну\n"
+    "  /run — запустити щоденний збір даних\n"
+    "  /retrain — запустити тижневе перенавчання моделі\n"
+    "  /mute, /unmute — вимкнути/увімкнути сповіщення в цьому чаті\n"
 )
+
+
+STATUS_UA = {"Rising": "зростає", "Declining": "спадає", "Stable": "стабільна"}
 
 
 def _fmt_topic_row(r: pd.Series) -> str:
@@ -160,10 +163,10 @@ def _fmt_topic_row(r: pd.Series) -> str:
     fp = r.get("forecast_pct")
     parts = [f"#{int(r['topic_id'])} _{kw}_"]
     if pd.notna(mp):
-        parts.append(f"momentum {mp:+.0f}%")
+        parts.append(f"моментум {mp:+.0f}%")
     if pd.notna(fp):
-        parts.append(f"forecast {fp:+.0f}%")
-    parts.append(f"_{r.get('status','')}_")
+        parts.append(f"прогноз {fp:+.0f}%")
+    parts.append(f"_{STATUS_UA.get(r.get('status',''), r.get('status',''))}_")
     return "  • " + " · ".join(parts)
 
 
@@ -174,14 +177,14 @@ def cmd_help(chat_id: int, _args: str) -> str:
 def cmd_trends(chat_id: int, _args: str) -> str:
     p = METRICS_DIR / "emerging_topics.csv"
     if not p.exists():
-        return "No `emerging_topics.csv` yet — pipeline has not run."
+        return "Поки немає файлу `emerging_topics.csv` — пайплайн ще не запускався."
     df = pd.read_csv(p)
     rising = df[df["status"] == "Rising"].head(5)
     if rising.empty:
-        return "No Rising topics right now. Top 5 by forecast:\n" + "\n".join(
+        return "Зараз немає тем, що зростають. Топ-5 за прогнозом:\n" + "\n".join(
             _fmt_topic_row(r) for _, r in df.head(5).iterrows()
         )
-    return "🚀 *Top Rising topics*\n" + "\n".join(
+    return "🚀 *Топ тем, що зростають*\n" + "\n".join(
         _fmt_topic_row(r) for _, r in rising.iterrows()
     )
 
@@ -189,49 +192,49 @@ def cmd_trends(chat_id: int, _args: str) -> str:
 def cmd_topic(chat_id: int, args: str) -> str:
     args = args.strip()
     if not args.isdigit():
-        return "Usage: `/topic <id>`"
+        return "Формат: `/topic <id>`"
     tid = int(args)
     p = METRICS_DIR / "emerging_topics.csv"
     if not p.exists():
-        return "No data."
+        return "Немає даних."
     df = pd.read_csv(p)
     row = df[df["topic_id"] == tid]
     if row.empty:
-        return f"Topic #{tid} not found."
+        return f"Тему #{tid} не знайдено."
     r = row.iloc[0]
     return (
-        f"*Topic #{tid}*\n"
-        f"Status: _{r.get('status','?')}_  · model: `{r.get('model','?')}`\n"
-        f"Recent: {r.get('recent_mean','?')}, baseline {r.get('baseline_mean','?')}\n"
-        f"Momentum: {r.get('momentum_pct','?'):+.1f}% · "
-        f"Forecast: {r.get('forecast_pct','?')}\n\n"
-        f"Keywords: _{r.get('keywords','')}_"
+        f"*Тема #{tid}*\n"
+        f"Статус: _{r.get('status','?')}_  · модель: `{r.get('model','?')}`\n"
+        f"Останні тижні: {r.get('recent_mean','?')}, база {r.get('baseline_mean','?')}\n"
+        f"Моментум: {r.get('momentum_pct','?'):+.1f}% · "
+        f"Прогноз: {r.get('forecast_pct','?')}\n\n"
+        f"Ключові слова: _{r.get('keywords','')}_"
     )
 
 
 def _file_age(p: Path) -> str:
     if not p.exists():
-        return "missing"
+        return "відсутній"
     mtime = datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc)
     delta = datetime.now(timezone.utc) - mtime
     hrs = delta.total_seconds() / 3600
     if hrs < 1:
-        return f"{int(delta.total_seconds()/60)}m ago"
+        return f"{int(delta.total_seconds()/60)} хв тому"
     if hrs < 48:
-        return f"{hrs:.1f}h ago"
-    return f"{hrs/24:.1f}d ago"
+        return f"{hrs:.1f} год тому"
+    return f"{hrs/24:.1f} дн тому"
 
 
 def cmd_status(chat_id: int, _args: str) -> str:
     sources = ["guardian.parquet", "newsapi.parquet",
                "reddit.parquet", "mastodon.parquet"]
-    lines = ["*Pipeline status*"]
+    lines = ["*Статус пайплайну*"]
     for f in sources:
         p = RAW_DIR / f
         n = ""
         if p.exists():
             try:
-                n = f" ({len(pd.read_parquet(p, columns=['id']))} rows)"
+                n = f" ({len(pd.read_parquet(p, columns=['id']))} рядків)"
             except Exception:
                 pass
         lines.append(f"  · {f}: {_file_age(p)}{n}")
@@ -245,7 +248,7 @@ def _trigger_workflow(workflow: str) -> str:
     pat = os.getenv("GH_PAT")
     repo = os.getenv("GH_REPO")  # "owner/name"
     if not pat or not repo:
-        return "❌ GH_PAT or GH_REPO not configured."
+        return "❌ GH_PAT або GH_REPO не налаштовано."
     url = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow}/dispatches"
     r = requests.post(
         url,
@@ -257,8 +260,10 @@ def _trigger_workflow(workflow: str) -> str:
         }, timeout=15,
     )
     if r.status_code == 204:
-        return f"✅ Triggered `{workflow}`"
+        return f"✅ Запущено `{workflow}`"
     return f"❌ {r.status_code}: {r.text[:200]}"
+
+
 
 
 def cmd_run(chat_id: int, _args: str) -> str:
@@ -273,14 +278,14 @@ def cmd_mute(chat_id: int, _args: str) -> str:
     s = _load_muted()
     s.add(chat_id)
     _save_muted(s)
-    return "🔕 Alerts muted for this chat. Use /unmute to enable."
+    return "🔕 Сповіщення вимкнено в цьому чаті. /unmute — увімкнути."
 
 
 def cmd_unmute(chat_id: int, _args: str) -> str:
     s = _load_muted()
     s.discard(chat_id)
     _save_muted(s)
-    return "🔔 Alerts re-enabled."
+    return "🔔 Сповіщення увімкнено знову."
 
 
 HANDLERS = {
@@ -309,7 +314,7 @@ def _handle_update(update: dict) -> None:
     if chat_id not in allowed:
         log.warning("Denied chat %s (%s)", chat_id, chat.get("username"))
         try:
-            send_message(chat_id, "⛔ Access denied. Your chat id: `%s`" % chat_id)
+            send_message(chat_id, "⛔ Доступ заборонено. Ваш chat id: `%s`" % chat_id)
         except Exception:
             pass
         return
@@ -320,13 +325,13 @@ def _handle_update(update: dict) -> None:
     cmd = cmd.split("@", 1)[0].lower()  # strip /cmd@botname
     handler = HANDLERS.get(cmd)
     if handler is None:
-        send_message(chat_id, f"Unknown command: `{cmd}`. /help for list.")
+        send_message(chat_id, f"Невідома команда: `{cmd}`. /help — список.")
         return
     try:
         reply = handler(chat_id, args)
     except Exception as e:
         log.exception("handler %s failed", cmd)
-        reply = f"❌ Error: {e}"
+        reply = f"❌ Помилка: {e}"
     send_message(chat_id, reply)
 
 

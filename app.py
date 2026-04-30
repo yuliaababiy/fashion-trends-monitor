@@ -14,15 +14,15 @@ import streamlit as st
 from src.config import METRICS_DIR, PROCESSED_DIR, RAW_DIR
 
 st.set_page_config(
-    page_title="Fashion Trend Forecasting",
+    page_title="Прогнозування модних трендів",
     page_icon=":dress:",
     layout="wide",
 )
 
-st.title("Fashion Trend Forecasting Dashboard")
+st.title("👗 Прогнозування модних трендів у соціальних мережах")
 st.caption(
-    "PhD coursework - topic modeling and time series forecasting on Guardian, "
-    "News API, and Google Trends."
+    "Курсова робота — тематичне моделювання та прогнозування часових рядів на основі "
+    "The Guardian, News API та Google Trends."
 )
 
 PALETTE = ["#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
@@ -110,7 +110,7 @@ def load_emerging_trends() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 def topic_label(tid: int, topics_df: pd.DataFrame) -> str:
     if topics_df.empty:
-        return f"Topic {tid}"
+        return f"Тема {tid}"
     if "Topic" in topics_df.columns:  # BERTopic
         row = topics_df[topics_df["Topic"] == tid]
         if not row.empty:
@@ -120,7 +120,7 @@ def topic_label(tid: int, topics_df: pd.DataFrame) -> str:
         if not row.empty:
             kw = str(row.iloc[0].get("keywords", ""))[:60]
             return f"{tid} - {kw}"
-    return f"Topic {tid}"
+    return f"Тема {tid}"
 
 
 def add_forecast_traces(fig, fc_df, x_col, y_col, models):
@@ -129,7 +129,7 @@ def add_forecast_traces(fig, fc_df, x_col, y_col, models):
             continue
         fig.add_trace(go.Scatter(
             x=grp[x_col], y=grp[y_col],
-            mode="lines+markers", name=f"{model} (pred)",
+            mode="lines+markers", name=f"{model} (прогноз)",
             line=dict(color=PALETTE[i % len(PALETTE)], dash="dash"),
         ))
 
@@ -138,7 +138,7 @@ def add_forecast_traces(fig, fc_df, x_col, y_col, models):
 # Tabs
 # ---------------------------------------------------------------------------
 tab_emerging, tab_topics, tab_trends, tab_compare = st.tabs(
-    ["Emerging Trends", "LDA Topics", "Google Trends", "Model Comparison"]
+    ["📈 Тренди, що зростають", "🔍 Теми LDA", "🌐 Google Trends", "⚖️ Порівняння моделей"]
 )
 
 
@@ -148,33 +148,36 @@ def _status_color(s: str) -> str:
             "Stable": "#7f7f7f"}.get(s, "#7f7f7f")
 
 
+STATUS_UA = {"Rising": "зростає", "Declining": "спадає", "Stable": "стабільний"}
+
+
 with tab_emerging:
     st.markdown(
-        "**What's trending up vs down?** Combines historical momentum "
-        "(last 8 weeks vs prior 26) with the best-model forecast for the "
-        "next 8 weeks."
+        "**Що зростає, а що — спадає?** Поєднує історичний моментум "
+        "(останні 8 тижнів vs попередні 26) з прогнозом найкращої моделі "
+        "на наступні 8 тижнів."
     )
 
     em_topics = load_emerging_topics()
     em_trends = load_emerging_trends()
 
-    st.subheader("Google Trends keywords")
+    st.subheader("Ключові слова Google Trends")
     if em_trends.empty:
-        st.info("Run `python -m src.analysis.emerging` first.")
+        st.info("Спочатку виконайте `python -m src.analysis.emerging`.")
     else:
         cols = st.columns(len(em_trends))
         for col, (_, r) in zip(cols, em_trends.iterrows()):
             with col:
                 col.markdown(f"**{r['keyword']}**")
-                col.metric("Momentum (recent vs past)",
+                col.metric("Моментум (останні vs попередні)",
                            f"{r['momentum_pct']:+.1f}%")
                 if pd.notna(r["forecast_pct"]):
-                    col.metric("Forecast next 8w",
+                    col.metric("Прогноз на 8 тижнів",
                                f"{r['forecast_pct']:+.1f}%")
                 col.markdown(
                     f"<span style='background:{_status_color(r['status'])};"
                     f"color:white;padding:4px 10px;border-radius:6px;'>"
-                    f"{r['status']}</span>",
+                    f"{STATUS_UA.get(r['status'], r['status'])}</span>",
                     unsafe_allow_html=True,
                 )
 
@@ -182,33 +185,33 @@ with tab_emerging:
         em_sorted = em_trends.sort_values("momentum_pct")
         fig.add_trace(go.Bar(
             x=em_sorted["momentum_pct"], y=em_sorted["keyword"],
-            orientation="h", name="Historical momentum",
+            orientation="h", name="Історичний моментум",
             marker_color=[_status_color(s) for s in em_sorted["status"]],
             text=[f"{v:+.0f}%" for v in em_sorted["momentum_pct"]],
             textposition="outside",
         ))
         fig.update_layout(
-            height=300, xaxis_title="Momentum, %",
+            height=300, xaxis_title="Моментум, %",
             margin=dict(l=10, r=10, t=10, b=10),
         )
         st.plotly_chart(fig, width="stretch")
 
         st.dataframe(em_trends, width="stretch")
 
-    st.subheader("LDA topics ranked by forecast growth")
+    st.subheader("Теми LDA, впорядковані за прогнозом зростання")
     if em_topics.empty:
-        st.info("Run `python -m src.analysis.emerging` first.")
+        st.info("Спочатку виконайте `python -m src.analysis.emerging`.")
     else:
         rising = em_topics[em_topics["status"] == "Rising"]
         declining = em_topics[em_topics["status"] == "Declining"]
         stable = em_topics[em_topics["status"] == "Stable"]
 
         c1, c2, c3 = st.columns(3)
-        c1.metric("Rising topics", len(rising))
-        c2.metric("Stable topics", len(stable))
-        c3.metric("Declining topics", len(declining))
+        c1.metric("Тем, що зростають", len(rising))
+        c2.metric("Стабільних тем", len(stable))
+        c3.metric("Тем, що спадають", len(declining))
 
-        st.markdown("##### Top 10 by historical momentum")
+        st.markdown("##### Топ-10 за історичним моментумом")
         top = em_topics.sort_values("momentum_pct", ascending=False).head(10)
         fig = go.Figure(go.Bar(
             x=top["momentum_pct"],
@@ -220,22 +223,21 @@ with tab_emerging:
             textposition="outside",
         ))
         fig.update_layout(
-            height=420, xaxis_title="Momentum, %",
+            height=420, xaxis_title="Моментум, %",
             yaxis=dict(autorange="reversed"),
             margin=dict(l=10, r=10, t=10, b=10),
         )
         st.plotly_chart(fig, width="stretch")
 
-        st.markdown("##### Full ranking")
+        st.markdown("##### Повний рейтинг")
         st.dataframe(em_topics, width="stretch")
 
         st.caption(
-            "**How to read:** *momentum_pct* tells you what is gaining "
-            "attention RIGHT NOW (last 8 weeks vs prior 26). "
-            "*forecast_pct* is the model's projection for the next 8 weeks "
-            "(positive = the model expects continued growth). "
-            "Topics with high momentum but negative forecast are likely "
-            "near peak hype."
+            "**Як читати:** *momentum_pct* — що привертає увагу САМЕ ЗАРАЗ "
+            "(останні 8 тижнів vs попередні 26). "
+            "*forecast_pct* — прогноз моделі на наступні 8 тижнів "
+            "(додатнє значення — очікується подальше зростання). "
+            "Теми з високим моментумом, але від'ємним прогнозом — ймовірно близько до піку."
         )
 
 
@@ -247,53 +249,53 @@ with tab_topics:
     metrics_df = load_topic_metrics()
 
     if ts_df.empty:
-        st.warning("No topic time series found. Run `python -m src.run_pipeline`.")
+        st.warning("Немає часових рядів тем. Запустіть `python -m src.run_pipeline`.")
     else:
         col_a, col_b = st.columns([2, 3])
         with col_a:
             tids = sorted(ts_df["topic_id"].unique().tolist())
-            tid = st.selectbox("Topic", tids,
+            tid = st.selectbox("Тема", tids,
                                format_func=lambda t: topic_label(t, topics_df))
         with col_b:
             available_models = sorted(fc_df["model"].unique()) if not fc_df.empty else []
-            show = st.multiselect("Models to display", available_models,
+            show = st.multiselect("Моделі для відображення", available_models,
                                   default=available_models)
 
         topic_ts = ts_df[ts_df["topic_id"] == tid].sort_values("period")
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Total mentions", int(topic_ts["count"].sum()))
-        c2.metric("Peak weekly count", int(topic_ts["count"].max()))
-        c3.metric("Latest week",
+        c1.metric("Всього згадок", int(topic_ts["count"].sum()))
+        c2.metric("Пік за тиждень", int(topic_ts["count"].max()))
+        c3.metric("Останній тиждень",
                   int(topic_ts["count"].iloc[-1]) if len(topic_ts) else 0)
         recent = topic_ts.tail(8)["count"].mean() if len(topic_ts) >= 8 else 0
         older = topic_ts.iloc[-16:-8]["count"].mean() if len(topic_ts) >= 16 else 0
         trend_pct = ((recent - older) / older * 100.0) if older > 0 else 0.0
-        c4.metric("8-week trend", f"{trend_pct:+.1f}%")
+        c4.metric("Тренд за 8 тижнів", f"{trend_pct:+.1f}%")
 
-        st.subheader(f"Time series - {topic_label(tid, topics_df)}")
+        st.subheader(f"Часовий ряд — {topic_label(tid, topics_df)}")
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=topic_ts["period"], y=topic_ts["count"],
-            mode="lines", name="History",
+            mode="lines", name="Історія",
             line=dict(color="#1f77b4", width=2),
         ))
         if not fc_df.empty:
             sub = fc_df[fc_df["topic_id"] == tid]
             add_forecast_traces(fig, sub, "period", "y_pred", show)
-        fig.update_layout(height=450, xaxis_title="Date",
-                          yaxis_title="Posts per week",
+        fig.update_layout(height=450, xaxis_title="Дата",
+                          yaxis_title="Публікацій на тиждень",
                           legend=dict(orientation="h", y=-0.2),
                           margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig, width="stretch")
 
         if not metrics_df.empty:
-            st.subheader("Forecast accuracy (this topic)")
+            st.subheader("Точність прогнозу (для цієї теми)")
             tm = (metrics_df[metrics_df["topic_id"] == tid]
                   .sort_values("MAE").round(3).reset_index(drop=True))
             st.dataframe(tm, width="stretch")
 
         if not topics_df.empty:
-            with st.expander("Topic keywords / info"):
+            with st.expander("Ключові слова / інформація про теми"):
                 st.dataframe(topics_df, width="stretch")
 
 
@@ -305,48 +307,48 @@ with tab_trends:
 
     if trends_df.empty:
         st.info(
-            "No Google Trends data. Collect with:\n\n"
+            "Немає даних Google Trends. Збери:\n\n"
             "`python -m src.collect.google_trends --timeframe 'today 5-y'`"
         )
     else:
         kws = sorted(trends_df["keyword"].unique().tolist())
         col_a, col_b = st.columns([2, 3])
         with col_a:
-            kw = st.selectbox("Keyword", kws)
+            kw = st.selectbox("Ключове слово", kws)
         with col_b:
             mods = sorted(tfc_df["model"].unique()) if not tfc_df.empty else []
-            show_t = st.multiselect("Models", mods, default=mods, key="trends_models")
+            show_t = st.multiselect("Моделі", mods, default=mods, key="trends_models")
 
         kws_ts = trends_df[trends_df["keyword"] == kw].sort_values("date")
 
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Mean interest", f"{kws_ts['interest'].mean():.1f}")
-        c2.metric("Peak interest", int(kws_ts["interest"].max()))
-        c3.metric("Latest week",
+        c1.metric("Середній інтерес", f"{kws_ts['interest'].mean():.1f}")
+        c2.metric("Піковий інтерес", int(kws_ts["interest"].max()))
+        c3.metric("Останній тиждень",
                   int(kws_ts["interest"].iloc[-1]) if len(kws_ts) else 0)
         recent = kws_ts.tail(8)["interest"].mean() if len(kws_ts) >= 8 else 0
         older = kws_ts.iloc[-16:-8]["interest"].mean() if len(kws_ts) >= 16 else 0
         trend_pct = ((recent - older) / older * 100.0) if older > 0 else 0.0
-        c4.metric("8-week trend", f"{trend_pct:+.1f}%")
+        c4.metric("Тренд за 8 тижнів", f"{trend_pct:+.1f}%")
 
-        st.subheader(f"Google Trends interest - {kw}")
+        st.subheader(f"Інтерес Google Trends — {kw}")
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=kws_ts["date"], y=kws_ts["interest"],
-            mode="lines", name="History",
+            mode="lines", name="Історія",
             line=dict(color="#1f77b4", width=2),
         ))
         if not tfc_df.empty:
             sub = tfc_df[tfc_df["keyword"] == kw]
             add_forecast_traces(fig, sub, "date", "y_pred", show_t)
-        fig.update_layout(height=450, xaxis_title="Date",
-                          yaxis_title="Interest (0-100)",
+        fig.update_layout(height=450, xaxis_title="Дата",
+                          yaxis_title="Інтерес (0–100)",
                           legend=dict(orientation="h", y=-0.2),
                           margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig, width="stretch")
 
         if not tmetrics_df.empty:
-            st.subheader("Forecast accuracy (this keyword)")
+            st.subheader("Точність прогнозу (для цього ключового слова)")
             tm = (tmetrics_df[tmetrics_df["keyword"] == kw]
                   .sort_values("MAE").round(3).reset_index(drop=True))
             st.dataframe(tm, width="stretch")
@@ -357,9 +359,9 @@ with tab_compare:
     metrics_df = load_topic_metrics()
     tmetrics_df = load_trends_metrics()
 
-    st.subheader("Average performance across LDA topics")
+    st.subheader("Середня точність по всіх темах LDA")
     if metrics_df.empty:
-        st.info("No topic metrics yet.")
+        st.info("Метрик по темах ще немає.")
     else:
         avg = (metrics_df.groupby("model")[["MAE", "RMSE", "MAPE", "sMAPE"]]
                          .mean().round(3).sort_values("MAE"))
@@ -370,14 +372,14 @@ with tab_compare:
             marker_color=PALETTE[:len(avg)],
             text=avg["MAE"].round(2), textposition="outside",
         ))
-        fig.update_layout(title="Mean MAE by model (lower = better)",
+        fig.update_layout(title="Середній MAE по моделях (менше — краще)",
                           height=350,
                           margin=dict(l=10, r=10, t=40, b=10))
         st.plotly_chart(fig, width="stretch")
 
-    st.subheader("Average performance on Google Trends keywords")
+    st.subheader("Середня точність по ключових словах Google Trends")
     if tmetrics_df.empty:
-        st.info("No Google Trends metrics yet.")
+        st.info("Метрик по Google Trends ще немає.")
     else:
         avg_t = (tmetrics_df.groupby("model")[["MAE", "RMSE", "MAPE", "sMAPE"]]
                             .mean().round(3).sort_values("MAE"))
@@ -388,7 +390,7 @@ with tab_compare:
             marker_color=PALETTE[:len(avg_t)],
             text=avg_t["MAE"].round(2), textposition="outside",
         ))
-        fig.update_layout(title="Mean MAE by model on Trends",
+        fig.update_layout(title="Середній MAE по моделях (Trends)",
                           height=350,
                           margin=dict(l=10, r=10, t=40, b=10))
         st.plotly_chart(fig, width="stretch")
