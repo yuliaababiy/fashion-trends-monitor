@@ -105,6 +105,12 @@ def load_emerging_trends() -> pd.DataFrame:
     return pd.read_csv(p) if p.exists() else pd.DataFrame()
 
 
+@st.cache_data
+def load_spike_terms() -> pd.DataFrame:
+    p = METRICS_DIR / "spike_terms.csv"
+    return pd.read_csv(p) if p.exists() else pd.DataFrame()
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -137,8 +143,9 @@ def add_forecast_traces(fig, fc_df, x_col, y_col, models):
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-tab_emerging, tab_topics, tab_trends, tab_compare = st.tabs(
-    ["📈 Тренди, що зростають", "🔍 Теми LDA", "🌐 Google Trends", "⚖️ Порівняння моделей"]
+tab_emerging, tab_spikes, tab_topics, tab_trends, tab_compare = st.tabs(
+    ["📈 Тренди, що зростають", "🔥 Сплески слів",
+     "🔍 Теми LDA", "🌐 Google Trends", "⚖️ Порівняння моделей"]
 )
 
 
@@ -213,24 +220,34 @@ with tab_emerging:
 
         st.markdown("##### Топ-10 за історичним моментумом")
         top = em_topics.sort_values("momentum_pct", ascending=False).head(10)
+        labels = [f"#{int(t)} — {str(k)[:90]}" for t, k in
+                  zip(top["topic_id"], top["keywords"])]
         fig = go.Figure(go.Bar(
             x=top["momentum_pct"],
-            y=[f"#{int(t)} - {str(k)[:55]}" for t, k in
-               zip(top["topic_id"], top["keywords"])],
+            y=labels,
             orientation="h",
             marker_color=[_status_color(s) for s in top["status"]],
             text=[f"{v:+.0f}%" for v in top["momentum_pct"]],
             textposition="outside",
+            hovertext=[str(k) for k in top["keywords"]],
+            hoverinfo="text+x",
         ))
         fig.update_layout(
-            height=420, xaxis_title="Моментум, %",
-            yaxis=dict(autorange="reversed"),
-            margin=dict(l=10, r=10, t=10, b=10),
+            height=520, xaxis_title="Моментум, %",
+            yaxis=dict(autorange="reversed", automargin=True),
+            margin=dict(l=10, r=40, t=10, b=10),
         )
         st.plotly_chart(fig, width="stretch")
 
         st.markdown("##### Повний рейтинг")
-        st.dataframe(em_topics, width="stretch")
+        st.dataframe(
+            em_topics,
+            width="stretch",
+            column_config={
+                "keywords": st.column_config.TextColumn(
+                    "keywords", width="large"),
+            },
+        )
 
         st.caption(
             "**Як читати:** *momentum_pct* — що привертає увагу САМЕ ЗАРАЗ "
@@ -238,6 +255,61 @@ with tab_emerging:
             "*forecast_pct* — прогноз моделі на наступні 8 тижнів "
             "(додатнє значення — очікується подальше зростання). "
             "Теми з високим моментумом, але від'ємним прогнозом — ймовірно близько до піку."
+        )
+
+
+# ============================ SPIKES TAB ===================================
+with tab_spikes:
+    st.markdown(
+        "**Сплески окремих слів (TF-IDF).** Шукаємо слова, частота яких "
+        "за останній тиждень аномально вища за базу попередніх 12 тижнів. "
+        "Це раннє попередження — слова можуть з'явитися ще до того, як "
+        "сформують повноцінну тему LDA."
+    )
+
+    spikes = load_spike_terms()
+    if spikes.empty:
+        st.info(
+            "Поки немає `spike_terms.csv`. Запустіть "
+            "`python -m src.analysis.spikes` або зачекайте на щоденний пайплайн."
+        )
+    else:
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Виявлено сплесків", len(spikes))
+        c2.metric("Найвищий z-score", f"{spikes['z_score'].max():.1f}")
+        c3.metric("Найбільший ×ratio", f"{spikes['spike_ratio'].max():.1f}")
+
+        st.markdown("##### Топ-15 за z-score")
+        top = spikes.sort_values("z_score", ascending=False).head(15)
+        fig = go.Figure(go.Bar(
+            x=top["z_score"],
+            y=top["term"],
+            orientation="h",
+            marker_color="#d62728",
+            text=[f"×{r:.1f}" for r in top["spike_ratio"]],
+            textposition="outside",
+            hovertext=[
+                f"{t}: recent={int(rc)}, base={bm:.1f}±{bs:.1f}"
+                for t, rc, bm, bs in zip(
+                    top["term"], top["recent_count"],
+                    top["baseline_mean"], top["baseline_std"])
+            ],
+            hoverinfo="text+x",
+        ))
+        fig.update_layout(
+            height=520, xaxis_title="z-score",
+            yaxis=dict(autorange="reversed", automargin=True),
+            margin=dict(l=10, r=40, t=10, b=10),
+        )
+        st.plotly_chart(fig, width="stretch")
+
+        st.markdown("##### Повна таблиця")
+        st.dataframe(spikes, width="stretch")
+        st.caption(
+            "**z-score** — наскільки останній тиждень відхиляється від "
+            "середнього бази (≥3 = аномалія). **spike_ratio** — у скільки "
+            "разів частіше слово згадувалось зараз порівняно з базою. "
+            "**recent_count** — згадок за останній тиждень."
         )
 
 
