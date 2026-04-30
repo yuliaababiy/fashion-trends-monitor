@@ -65,3 +65,9 @@ jobs:
             git commit -m "chore(daily): update data + metrics [skip ci]"
             git push
           fi
+
+      - name: Trigger bot image rebuild (refresh embedded data)
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run build-bot.yml --ref main
