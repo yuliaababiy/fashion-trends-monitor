@@ -90,13 +90,69 @@ def _api_call(method: str, **payload) -> dict:
     return r.json()
 
 
-def send_message(chat_id: int, text: str, parse_mode: str = "Markdown") -> dict:
-    return _api_call(
-        "sendMessage",
+def send_message(
+    chat_id: int,
+    text: str,
+    parse_mode: str = "Markdown",
+    reply_markup: dict | None = None,
+) -> dict:
+    payload = dict(
         chat_id=chat_id, text=text,
         parse_mode=parse_mode,
         disable_web_page_preview=True,
     )
+    if reply_markup is not None:
+        payload["reply_markup"] = reply_markup
+    return _api_call("sendMessage", **payload)
+
+
+def _dashboard_url() -> str | None:
+    _load_env()
+    return os.getenv("DASHBOARD_URL") or None
+
+
+def _main_menu_kb(chat_id: int | None = None) -> dict:
+    muted = _load_muted()
+    is_muted = chat_id in muted if chat_id is not None else False
+    rows = [
+        [
+            {"text": "🚀 Тренди", "callback_data": "menu:trends"},
+            {"text": "📊 Статус", "callback_data": "menu:status"},
+        ],
+        [
+            {"text": "▶️ Збір даних", "callback_data": "menu:run"},
+            {"text": "🔁 Перенавчання", "callback_data": "menu:retrain"},
+        ],
+    ]
+    last = []
+    url = _dashboard_url()
+    if url:
+        last.append({"text": "🌐 Дашборд", "url": url})
+    last.append(
+        {"text": "🔔 Увімкнути" if is_muted else "🔕 Вимкнути",
+         "callback_data": "menu:unmute" if is_muted else "menu:mute"}
+    )
+    rows.append(last)
+    return {"inline_keyboard": rows}
+
+
+def _topics_kb(topic_ids: list[int]) -> dict:
+    """Inline keyboard with a button per topic id (3 per row)."""
+    rows: list[list[dict]] = []
+    row: list[dict] = []
+    for tid in topic_ids:
+        row.append({"text": f"#{tid}", "callback_data": f"topic:{tid}"})
+        if len(row) == 3:
+            rows.append(row)
+            row = []
+    if row:
+        rows.append(row)
+    rows.append([{"text": "⬅️ Меню", "callback_data": "menu:help"}])
+    return {"inline_keyboard": rows}
+
+
+def _back_kb() -> dict:
+    return {"inline_keyboard": [[{"text": "⬅️ Меню", "callback_data": "menu:help"}]]}
 
 
 def send_alert_to_all(text: str) -> None:
@@ -144,7 +200,7 @@ def _save_muted(s: set[int]) -> None:
 # ---------------------------------------------------------------------------
 HELP_TEXT = (
     "*👗 Моніторинг модних трендів*\n\n"
-    "Доступні команди:\n"
+    "Оберіть дію кнопкою нижче або використайте команди:\n"
     "  /trends — топ тем, що зростають\n"
     "  /topic <id> — деталі певної теми\n"
     "  /status — свіжість даних пайплайну\n"
@@ -170,46 +226,59 @@ def _fmt_topic_row(r: pd.Series) -> str:
     return "  • " + " · ".join(parts)
 
 
-def cmd_help(chat_id: int, _args: str) -> str:
-    return HELP_TEXT
+def cmd_help(chat_id: int, _args: str):
+    return {"text": HELP_TEXT, "reply_markup": _main_menu_kb(chat_id)}
 
 
-def cmd_trends(chat_id: int, _args: str) -> str:
+def cmd_trends(chat_id: int, _args: str):
     p = METRICS_DIR / "emerging_topics.csv"
     if not p.exists():
         return "Поки немає файлу `emerging_topics.csv` — пайплайн ще не запускався."
     df = pd.read_csv(p)
     rising = df[df["status"] == "Rising"].head(5)
     if rising.empty:
-        return "Зараз немає тем, що зростають. Топ-5 за прогнозом:\n" + "\n".join(
-            _fmt_topic_row(r) for _, r in df.head(5).iterrows()
+        sub = df.head(5)
+        text = "Зараз немає тем, що зростають. Топ-5 за прогнозом:\n" + "\n".join(
+            _fmt_topic_row(r) for _, r in sub.iterrows()
         )
-    return "🚀 *Топ тем, що зростають*\n" + "\n".join(
-        _fmt_topic_row(r) for _, r in rising.iterrows()
-    )
+    else:
+        sub = rising
+        text = "🚀 *Топ тем, що зростають*\n" + "\n".join(
+            _fmt_topic_row(r) for _, r in sub.iterrows()
+        )
+    text += "\n\nНатисніть на номер теми, щоб побачити деталі ↓"
+    ids = [int(x) for x in sub["topic_id"].tolist()]
+    return {"text": text, "reply_markup": _topics_kb(ids)}
 
 
-def cmd_topic(chat_id: int, args: str) -> str:
+def cmd_topic(chat_id: int, args: str):
     args = args.strip()
-    if not args.isdigit():
-        return "Формат: `/topic <id>`"
-    tid = int(args)
     p = METRICS_DIR / "emerging_topics.csv"
     if not p.exists():
         return "Немає даних."
     df = pd.read_csv(p)
+    if not args.isdigit():
+        # No id provided — show picker.
+        ids = [int(x) for x in df.head(15)["topic_id"].tolist()]
+        return {
+            "text": "Оберіть тему:",
+            "reply_markup": _topics_kb(ids),
+        }
+    tid = int(args)
     row = df[df["topic_id"] == tid]
     if row.empty:
         return f"Тему #{tid} не знайдено."
     r = row.iloc[0]
-    return (
+    text = (
         f"*Тема #{tid}*\n"
-        f"Статус: _{r.get('status','?')}_  · модель: `{r.get('model','?')}`\n"
+        f"Статус: _{STATUS_UA.get(r.get('status',''), r.get('status','?'))}_  "
+        f"· модель: `{r.get('model','?')}`\n"
         f"Останні тижні: {r.get('recent_mean','?')}, база {r.get('baseline_mean','?')}\n"
         f"Моментум: {r.get('momentum_pct','?'):+.1f}% · "
         f"Прогноз: {r.get('forecast_pct','?')}\n\n"
         f"Ключові слова: _{r.get('keywords','')}_"
     )
+    return {"text": text, "reply_markup": _back_kb()}
 
 
 def _file_age(p: Path) -> str:
@@ -225,7 +294,7 @@ def _file_age(p: Path) -> str:
     return f"{hrs/24:.1f} дн тому"
 
 
-def cmd_status(chat_id: int, _args: str) -> str:
+def cmd_status(chat_id: int, _args: str):
     sources = ["guardian.parquet", "newsapi.parquet",
                "reddit.parquet", "mastodon.parquet"]
     lines = ["*Статус пайплайну*"]
@@ -241,7 +310,7 @@ def cmd_status(chat_id: int, _args: str) -> str:
     lines.append("")
     lines.append(f"forecasts.parquet: {_file_age(PROCESSED_DIR / 'forecasts.parquet')}")
     lines.append(f"emerging_topics.csv: {_file_age(METRICS_DIR / 'emerging_topics.csv')}")
-    return "\n".join(lines)
+    return {"text": "\n".join(lines), "reply_markup": _back_kb()}
 
 
 def _trigger_workflow(workflow: str) -> str:
@@ -266,26 +335,32 @@ def _trigger_workflow(workflow: str) -> str:
 
 
 
-def cmd_run(chat_id: int, _args: str) -> str:
-    return _trigger_workflow("daily.yml")
+def cmd_run(chat_id: int, _args: str):
+    return {"text": _trigger_workflow("daily.yml"), "reply_markup": _back_kb()}
 
 
-def cmd_retrain(chat_id: int, _args: str) -> str:
-    return _trigger_workflow("weekly.yml")
+def cmd_retrain(chat_id: int, _args: str):
+    return {"text": _trigger_workflow("weekly.yml"), "reply_markup": _back_kb()}
 
 
-def cmd_mute(chat_id: int, _args: str) -> str:
+def cmd_mute(chat_id: int, _args: str):
     s = _load_muted()
     s.add(chat_id)
     _save_muted(s)
-    return "🔕 Сповіщення вимкнено в цьому чаті. /unmute — увімкнути."
+    return {
+        "text": "🔕 Сповіщення вимкнено в цьому чаті.",
+        "reply_markup": _main_menu_kb(chat_id),
+    }
 
 
-def cmd_unmute(chat_id: int, _args: str) -> str:
+def cmd_unmute(chat_id: int, _args: str):
     s = _load_muted()
     s.discard(chat_id)
     _save_muted(s)
-    return "🔔 Сповіщення увімкнено знову."
+    return {
+        "text": "🔔 Сповіщення увімкнено знову.",
+        "reply_markup": _main_menu_kb(chat_id),
+    }
 
 
 HANDLERS = {
@@ -302,7 +377,59 @@ HANDLERS = {
 
 
 # ---------------------------------------------------------------------------
+def _send_reply(chat_id: int, reply) -> None:
+    if isinstance(reply, dict):
+        send_message(chat_id, reply["text"], reply_markup=reply.get("reply_markup"))
+    else:
+        send_message(chat_id, str(reply))
+
+
+def _dispatch(chat_id: int, cmd: str, args: str):
+    handler = HANDLERS.get(cmd)
+    if handler is None:
+        return f"Невідома команда: `{cmd}`. /help — список."
+    try:
+        return handler(chat_id, args)
+    except Exception as e:
+        log.exception("handler %s failed", cmd)
+        return f"❌ Помилка: {e}"
+
+
+def _handle_callback(cb: dict) -> None:
+    cb_id = cb.get("id")
+    data = cb.get("data") or ""
+    msg = cb.get("message") or {}
+    chat_id = (msg.get("chat") or {}).get("id")
+    if chat_id not in _allowed_chats():
+        try:
+            _api_call("answerCallbackQuery", callback_query_id=cb_id,
+                      text="⛔ Доступ заборонено")
+        except Exception:
+            pass
+        return
+    try:
+        _api_call("answerCallbackQuery", callback_query_id=cb_id)
+    except Exception:
+        pass
+
+    kind, _, payload = data.partition(":")
+    if kind == "menu":
+        cmd_map = {
+            "help": "/help", "trends": "/trends", "status": "/status",
+            "run": "/run", "retrain": "/retrain",
+            "mute": "/mute", "unmute": "/unmute",
+        }
+        cmd = cmd_map.get(payload)
+        if cmd:
+            _send_reply(chat_id, _dispatch(chat_id, cmd, ""))
+    elif kind == "topic":
+        _send_reply(chat_id, _dispatch(chat_id, "/topic", payload))
+
+
 def _handle_update(update: dict) -> None:
+    if "callback_query" in update:
+        _handle_callback(update["callback_query"])
+        return
     msg = update.get("message") or update.get("edited_message")
     if not msg:
         return
@@ -323,16 +450,7 @@ def _handle_update(update: dict) -> None:
         return
     cmd, _, args = text.partition(" ")
     cmd = cmd.split("@", 1)[0].lower()  # strip /cmd@botname
-    handler = HANDLERS.get(cmd)
-    if handler is None:
-        send_message(chat_id, f"Невідома команда: `{cmd}`. /help — список.")
-        return
-    try:
-        reply = handler(chat_id, args)
-    except Exception as e:
-        log.exception("handler %s failed", cmd)
-        reply = f"❌ Помилка: {e}"
-    send_message(chat_id, reply)
+    _send_reply(chat_id, _dispatch(chat_id, cmd, args))
 
 
 def poll_once(timeout: int = 0) -> int:
