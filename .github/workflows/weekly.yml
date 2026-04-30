@@ -50,10 +50,16 @@ jobs:
         run: |
           git config user.name  "trend-monitor-bot"
           git config user.email "trend-monitor-bot@users.noreply.github.com"
-          git add data/raw/*.parquet data/processed/* \
-                  data/interim/*.parquet \
-                  reports/metrics/*.csv reports/state/*.csv \
-                  reports/state/*.json models/*.pkl || true
+          shopt -s nullglob
+          for pat in 'data/raw/*.parquet' 'data/processed/*' \
+                     'data/interim/*.parquet' 'reports/metrics/*.csv' \
+                     'reports/state/*.csv' 'reports/state/*.json' \
+                     'models/*.pkl'; do
+            files=( $pat )
+            if [ ${#files[@]} -gt 0 ]; then
+              git add "${files[@]}"
+            fi
+          done
           if git diff --staged --quiet; then
             echo "No changes."
           else
