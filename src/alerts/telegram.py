@@ -290,20 +290,22 @@ def _file_age(p: Path) -> str:
 
 def cmd_status(chat_id: int, _args: str):
     sources = ["guardian.parquet", "newsapi.parquet",
-               "reddit.parquet", "mastodon.parquet"]
+               "reddit.parquet", "mastodon.parquet", "google_trends.parquet"]
     lines = ["*Статус пайплайну*"]
     for f in sources:
         p = RAW_DIR / f
         n = ""
         if p.exists():
             try:
-                n = f" ({len(pd.read_parquet(p, columns=['id']))} рядків)"
+                cols = ["keyword"] if f == "google_trends.parquet" else ["id"]
+                n = f" ({len(pd.read_parquet(p, columns=cols))} рядків)"
             except Exception:
                 pass
         lines.append(f"  · `{f}`: {_file_age(p)}{n}")
     lines.append("")
     lines.append(f"`forecasts.parquet`: {_file_age(PROCESSED_DIR / 'forecasts.parquet')}")
     lines.append(f"`emerging_topics.csv`: {_file_age(METRICS_DIR / 'emerging_topics.csv')}")
+    lines.append(f"`emerging_trends.csv`: {_file_age(METRICS_DIR / 'emerging_trends.csv')}")
     return {"text": "\n".join(lines), "reply_markup": _back_kb()}
 
 
