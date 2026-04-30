@@ -65,7 +65,14 @@ jobs:
             echo "No changes."
           else
             git commit -m "chore(weekly): retrain [skip ci]"
-            git push
+            for i in 1 2 3 4 5; do
+              if git push; then
+                echo "Pushed on attempt $i"
+                break
+              fi
+              echo "Push rejected (attempt $i) — rebasing onto origin/main"
+              git pull --rebase origin main
+            done
           fi
 
       - name: Trigger bot image rebuild (refresh embedded data)
