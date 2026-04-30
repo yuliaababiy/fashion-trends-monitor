@@ -79,12 +79,23 @@ def collect_incremental(skip_newsapi: bool = False) -> None:
     else:
         log.info("NEWSAPI_KEY missing or skipped; skipping NewsAPI.")
 
-    # Reddit blocks data-center IPs (Azure / AWS / GCP) regardless of
-    # User-Agent, so the public JSON endpoint returns 403 on GitHub
-    # Actions. Run Reddit only when not in CI; locally it works fine.
-    if os.getenv("GITHUB_ACTIONS") == "true":
-        log.info("GITHUB_ACTIONS=true detected — skipping Reddit "
-                 "(data-center IPs are blocked by Reddit).")
+    # Reddit: prefer OAuth (works on data-center IPs); fall back to the
+    # public JSON endpoint when running locally without OAuth credentials.
+    has_oauth = all(os.getenv(k) for k in (
+        "REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET",
+        "REDDIT_USERNAME", "REDDIT_PASSWORD", "REDDIT_USER_AGENT",
+    ))
+    if has_oauth:
+        _step(
+            "Reddit OAuth (incremental)",
+            [PY, "-m", "src.collect.reddit_oauth",
+             "--listing", "new", "--pages", "3", "--incremental"],
+            optional=True,
+        )
+    elif os.getenv("GITHUB_ACTIONS") == "true":
+        log.info("No Reddit OAuth credentials and running on GitHub "
+                 "Actions — skipping Reddit (public JSON is blocked on "
+                 "data-center IPs).")
     else:
         _step(
             "Reddit JSON (incremental)",
