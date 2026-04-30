@@ -41,3 +41,5 @@ reports/figures/
 .webhook_secret
 
 deploy_bot.ps1
+
+azure_creds.json
