@@ -1,0 +1,19 @@
+# local build context only — exclude everything not needed in the bot image
+.venv/
+.git/
+.github/
+__pycache__/
+*.pyc
+logs/
+notebooks/
+deploy_webhook/
+deploy_webhook.zip
+data/processed/
+data/interim/
+models/
+reports/figures/
+docs/
+*.md
+streamlit_app.py
+app.py
+webhook.py

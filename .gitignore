@@ -34,3 +34,8 @@ Thumbs.db
 # Heavy artifacts that should NOT be in git
 reports/figures/
 *.html
+
+# Azure deployment metadata
+.azure_*
+.acr_*
+.webhook_secret

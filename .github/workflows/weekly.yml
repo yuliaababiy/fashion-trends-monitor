@@ -23,6 +23,8 @@ jobs:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_ALLOWED_CHATS: ${{ secrets.TELEGRAM_ALLOWED_CHATS }}
       REDDIT_PROXIES: ${{ secrets.REDDIT_PROXIES }}
+
+    steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5

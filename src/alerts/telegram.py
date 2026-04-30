@@ -333,7 +333,12 @@ def _handle_update(update: dict) -> None:
 def poll_once(timeout: int = 0) -> int:
     """Process all pending updates and return the number handled."""
     offset = _load_offset()
-    resp = _api_call("getUpdates", offset=offset, timeout=timeout)
+    # getUpdates with long-poll needs a longer HTTP timeout than the default.
+    url = API.format(token=_token(), method="getUpdates")
+    r = requests.post(url, json={"offset": offset, "timeout": timeout},
+                      timeout=timeout + 15)
+    r.raise_for_status()
+    resp = r.json()
     updates = resp.get("result", [])
     if not updates:
         return 0
@@ -347,12 +352,34 @@ def poll_once(timeout: int = 0) -> int:
     return len(updates)
 
 
+def poll_forever(timeout: int = 30) -> None:
+    """Long-poll Telegram forever — for always-on hosting (Container Apps)."""
+    log.info("Long-poll mode (timeout=%ss). Press Ctrl+C to stop.", timeout)
+    backoff = 1.0
+    while True:
+        try:
+            n = poll_once(timeout=timeout)
+            if n:
+                log.info("Processed %d updates.", n)
+            backoff = 1.0
+        except KeyboardInterrupt:
+            log.info("Stopped by user.")
+            return
+        except Exception as e:
+            log.warning("poll error: %s — retrying in %.1fs", e, backoff)
+            import time as _t
+            _t.sleep(backoff)
+            backoff = min(backoff * 2, 60.0)
+
+
 # ---------------------------------------------------------------------------
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--send", help="Send a one-off message to all allowed chats.")
     p.add_argument("--poll-once", action="store_true",
                    help="Process pending bot updates and exit.")
+    p.add_argument("--poll-forever", action="store_true",
+                   help="Long-poll forever (for always-on hosting).")
     p.add_argument("--reset-offset", action="store_true",
                    help="Skip all pending updates (set offset to current head).")
     args = p.parse_args()
@@ -373,6 +400,10 @@ def main() -> None:
     if args.poll_once:
         n = poll_once()
         log.info("Processed %d updates.", n)
+        return
+
+    if args.poll_forever:
+        poll_forever()
         return
 
     p.print_help()

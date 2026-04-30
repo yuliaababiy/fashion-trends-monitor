@@ -1,0 +1,5 @@
+# Minimal deps for Telegram bot container.
+requests==2.32.3
+pandas==2.2.3
+pyarrow==17.0.0
+python-dotenv==1.0.1
