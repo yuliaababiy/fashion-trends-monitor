@@ -306,10 +306,10 @@ def cmd_status(chat_id: int, _args: str):
                 n = f" ({len(pd.read_parquet(p, columns=['id']))} рядків)"
             except Exception:
                 pass
-        lines.append(f"  · {f}: {_file_age(p)}{n}")
+        lines.append(f"  · `{f}`: {_file_age(p)}{n}")
     lines.append("")
-    lines.append(f"forecasts.parquet: {_file_age(PROCESSED_DIR / 'forecasts.parquet')}")
-    lines.append(f"emerging_topics.csv: {_file_age(METRICS_DIR / 'emerging_topics.csv')}")
+    lines.append(f"`forecasts.parquet`: {_file_age(PROCESSED_DIR / 'forecasts.parquet')}")
+    lines.append(f"`emerging_topics.csv`: {_file_age(METRICS_DIR / 'emerging_topics.csv')}")
     return {"text": "\n".join(lines), "reply_markup": _back_kb()}
 
 
@@ -379,9 +379,20 @@ HANDLERS = {
 # ---------------------------------------------------------------------------
 def _send_reply(chat_id: int, reply) -> None:
     if isinstance(reply, dict):
-        send_message(chat_id, reply["text"], reply_markup=reply.get("reply_markup"))
+        text = reply["text"]
+        kb = reply.get("reply_markup")
     else:
-        send_message(chat_id, str(reply))
+        text = str(reply)
+        kb = None
+    try:
+        send_message(chat_id, text, reply_markup=kb)
+    except requests.HTTPError as e:
+        # Likely Markdown parse error — retry as plain text.
+        log.warning("send failed (%s) — retrying without Markdown", e)
+        try:
+            send_message(chat_id, text, parse_mode="", reply_markup=kb)
+        except Exception:
+            log.exception("plain-text fallback also failed")
 
 
 def _dispatch(chat_id: int, cmd: str, args: str):
