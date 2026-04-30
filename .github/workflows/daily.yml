@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # required to trigger build-bot via gh workflow run
 
 concurrency:
   group: daily-monitor
