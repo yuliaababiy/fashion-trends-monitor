@@ -211,7 +211,8 @@ STATUS_UA = {"Rising": "зростає", "Declining": "спадає", "Stable": 
 
 
 def _fmt_topic_row(r: pd.Series) -> str:
-    kw = (r.get("keywords") or "")[:80]
+    kw_raw = r.get("keywords")
+    kw = (kw_raw if isinstance(kw_raw, str) else "")[:80]
     mp = r.get("momentum_pct")
     fp = r.get("forecast_pct")
     parts = [f"#{int(r['topic_id'])} _{kw}_"]
@@ -266,14 +267,20 @@ def cmd_topic(chat_id: int, args: str):
     if row.empty:
         return f"Тему #{tid} не знайдено."
     r = row.iloc[0]
+    mp = r.get("momentum_pct")
+    fp = r.get("forecast_pct")
+    rm = r.get("recent_mean")
+    bm = r.get("baseline_mean")
+    kw = r.get("keywords")
     text = (
         f"*Тема #{tid}*\n"
         f"Статус: _{STATUS_UA.get(r.get('status',''), r.get('status','?'))}_  "
         f"· модель: `{r.get('model','?')}`\n"
-        f"Останні тижні: {r.get('recent_mean','?')}, база {r.get('baseline_mean','?')}\n"
-        f"Моментум: {r.get('momentum_pct','?'):+.1f}% · "
-        f"Прогноз: {r.get('forecast_pct','?')}\n\n"
-        f"Ключові слова: _{r.get('keywords','')}_"
+        f"Останні тижні: {rm if pd.notna(rm) else '?'}, "
+        f"база {bm if pd.notna(bm) else '?'}\n"
+        f"Моментум: {f'{mp:+.1f}%' if pd.notna(mp) else '?'} · "
+        f"Прогноз: {f'{fp:+.1f}%' if pd.notna(fp) else '?'}\n\n"
+        f"Ключові слова: _{kw if isinstance(kw, str) else ''}_"
     )
     return {"text": text, "reply_markup": _back_kb()}
 
