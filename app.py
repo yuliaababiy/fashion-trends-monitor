@@ -219,8 +219,13 @@ with tab_emerging:
         c3.metric("Тем, що спадають", len(declining))
 
         st.markdown("##### Топ-10 за історичним моментумом")
-        top = em_topics.sort_values("momentum_pct", ascending=False).head(10)
-        labels = [f"#{int(t)} — {str(k)[:90]}" for t, k in
+        em_named = em_topics.dropna(subset=["keywords"])
+        em_named = em_named[em_named["keywords"].astype(str).str.strip() != ""]
+        top = em_named.sort_values("momentum_pct", ascending=False).head(10)
+        def _short(k: str, n: int = 55) -> str:
+            k = str(k)
+            return k if len(k) <= n else k[: n - 1].rstrip(", ") + "…"
+        labels = [f"#{int(t)} — {_short(k)}" for t, k in
                   zip(top["topic_id"], top["keywords"])]
         fig = go.Figure(go.Bar(
             x=top["momentum_pct"],
@@ -233,15 +238,17 @@ with tab_emerging:
             hoverinfo="text+x",
         ))
         fig.update_layout(
-            height=520, xaxis_title="Моментум, %",
-            yaxis=dict(autorange="reversed", automargin=True),
-            margin=dict(l=10, r=40, t=10, b=10),
+            height=560, xaxis_title="Моментум, %",
+            yaxis=dict(autorange="reversed", automargin=True, tickfont=dict(size=12)),
+            margin=dict(l=10, r=60, t=10, b=10),
         )
         st.plotly_chart(fig, width="stretch")
 
         st.markdown("##### Повний рейтинг")
+        em_display = em_topics.copy()
+        em_display["keywords"] = em_display["keywords"].fillna("(без ключових слів)")
         st.dataframe(
-            em_topics,
+            em_display,
             width="stretch",
             column_config={
                 "keywords": st.column_config.TextColumn(
