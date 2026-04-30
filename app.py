@@ -1,4 +1,4 @@
-﻿"""Streamlit dashboard for fashion trend prediction.
+"""Streamlit dashboard for fashion trend prediction.
 
 Run with:
     streamlit run app.py
