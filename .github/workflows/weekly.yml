@@ -43,7 +43,7 @@ jobs:
 
       - name: Notify Telegram
         if: success()
-        run: python -m src.alerts.telegram --send "🛠 *Weekly retrain complete* — model and forecasts refreshed."
+        run: python -m src.alerts.telegram --send "🛠 *Тижневе перенавчання завершено* — модель та прогнози оновлено."
         continue-on-error: true
 
       - name: Commit updated data + model

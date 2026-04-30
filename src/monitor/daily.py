@@ -211,32 +211,32 @@ def format_alert(diff: dict) -> str | None:
         return None
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    lines = [f"📈 *Trend monitor — {today}*", ""]
+    lines = [f"📈 *Монітор трендів — {today}*", ""]
 
     if new_rising:
-        lines.append(f"🚀 *New Rising topics ({len(new_rising)})*:")
+        lines.append(f"🚀 *Нові теми, що зростають ({len(new_rising)})*:")
         for r in new_rising[:5]:
             kw = (r.get("keywords") or "")[:60]
             fp = r.get("forecast_pct")
             mp = r.get("momentum_pct")
             lines.append(
                 f"  • #{int(r['topic_id'])} _{kw}_  "
-                f"momentum {mp:+.0f}% / forecast {fp:+.0f}%"
+                f"моментум {mp:+.0f}% / прогноз {fp:+.0f}%"
                 if fp is not None and not pd.isna(fp)
-                else f"  • #{int(r['topic_id'])} _{kw}_  momentum {mp:+.0f}%"
+                else f"  • #{int(r['topic_id'])} _{kw}_  моментум {mp:+.0f}%"
             )
         lines.append("")
 
     if big_changes:
-        lines.append(f"⚡ *Forecast shifts (≥{NOTEWORTHY_DELTA:.0f} pp)*:")
+        lines.append(f"⚡ *Зміни прогнозу (≥{NOTEWORTHY_DELTA:.0f} в.п.)*:")
         for r in big_changes[:5]:
             kw = (r.get("keywords") or "")[:60]
             lines.append(
-                f"  • #{int(r['topic_id'])} _{kw}_  Δ {r['delta_pp']:+.1f} pp"
+                f"  • #{int(r['topic_id'])} _{kw}_  Δ {r['delta_pp']:+.1f} в.п."
             )
         lines.append("")
 
-    lines.append("Run `/trends` in the bot for the full ranking.")
+    lines.append("Надішліть `/trends` боту для повного рейтингу.")
     return "\n".join(lines)
 
 
