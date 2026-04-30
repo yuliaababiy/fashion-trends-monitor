@@ -41,6 +41,11 @@ jobs:
       - name: Run daily monitor
         run: python -m src.monitor.daily
 
+      - name: Notify Telegram
+        if: success()
+        run: python -m src.alerts.telegram --send "✅ *Щоденний моніторинг завершено* — дані та прогнози оновлено."
+        continue-on-error: true
+
       - name: Commit updated data
         run: |
           git config user.name  "trend-monitor-bot"
