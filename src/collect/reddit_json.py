@@ -2,22 +2,33 @@
 
 Reddit exposes ``/r/{sub}/{listing}.json`` and ``/search.json`` endpoints
 without auth as long as the request carries a unique User-Agent and
-respects ~60 requests/minute.
+respects ~60 requests/minute. Reddit aggressively blocks data-center
+IP ranges (Azure / AWS / GCP) — when running on GitHub Actions you must
+route requests through residential proxies.
+
+Set ``REDDIT_PROXIES`` env var (or ``--proxies`` flag) with a
+newline-, comma- or semicolon-separated list of entries in the form
+``host:port:user:pass`` (Webshare format). One proxy is picked at
+random per request, with rotation on failure.
 
 Usage:
-    python -m src.collect.reddit_json \
-        --subreddits femalefashionadvice malefashionadvice streetwear \
+    python -m src.collect.reddit_json \\
+        --subreddits femalefashionadvice malefashionadvice streetwear \\
         --listing new --pages 5
 """
 from __future__ import annotations
 
 import argparse
 import logging
+import os
+import random
+import re
 import time
 from pathlib import Path
 
 import pandas as pd
 import requests
+from dotenv import load_dotenv
 
 from src.config import DEFAULT_SUBREDDITS, RAW_DIR
 
@@ -28,18 +39,88 @@ UA = "fashion-trends-research/1.0 (by /u/anon-researcher)"
 BASE = "https://www.reddit.com"
 
 
+def parse_proxies(raw: str | None) -> list[dict]:
+    """Parse a multi-proxy string into requests-style proxy dicts.
+
+    Accepted formats per entry (separated by newline/comma/semicolon):
+        host:port:user:pass
+        http://user:pass@host:port
+    """
+    if not raw:
+        return []
+    out: list[dict] = []
+    for entry in re.split(r"[,\s;]+", raw.strip()):
+        if not entry:
+            continue
+        if entry.startswith("http://") or entry.startswith("https://"):
+            url = entry
+        else:
+            parts = entry.split(":")
+            if len(parts) == 4:
+                host, port, user, pwd = parts
+                url = f"http://{user}:{pwd}@{host}:{port}"
+            elif len(parts) == 2:
+                host, port = parts
+                url = f"http://{host}:{port}"
+            else:
+                log.warning("Skipping unrecognized proxy entry: %s", entry)
+                continue
+        out.append({"http": url, "https": url})
+    return out
+
+
+def load_proxies(cli_value: str | None) -> list[dict]:
+    if cli_value:
+        return parse_proxies(cli_value)
+    load_dotenv()
+    return parse_proxies(os.getenv("REDDIT_PROXIES"))
+
+
 def fetch_listing(sub: str, listing: str = "new", limit: int = 100,
-                   after: str | None = None, t: str = "year") -> dict:
+                   after: str | None = None, t: str = "year",
+                   proxies: list[dict] | None = None,
+                   max_retries: int = 4) -> dict:
     params = {"limit": limit, "raw_json": 1}
     if after:
         params["after"] = after
     if listing == "top":
         params["t"] = t
     url = f"{BASE}/r/{sub}/{listing}.json"
-    r = requests.get(url, params=params,
-                     headers={"User-Agent": UA}, timeout=30)
-    r.raise_for_status()
-    return r.json()
+    headers = {"User-Agent": UA}
+
+    pool = list(proxies) if proxies else [None]
+    random.shuffle(pool)
+
+    last_err: Exception | None = None
+    attempts = max(max_retries, len(pool))
+    for i in range(attempts):
+        proxy = pool[i % len(pool)]
+        try:
+            r = requests.get(url, params=params, headers=headers,
+                             proxies=proxy, timeout=30)
+            if r.status_code in (403, 429):
+                log.warning("r/%s via %s -> %s; rotating",
+                            sub, _proxy_label(proxy), r.status_code)
+                last_err = requests.HTTPError(f"{r.status_code} on {url}")
+                time.sleep(1.0)
+                continue
+            r.raise_for_status()
+            return r.json()
+        except (requests.ConnectionError, requests.Timeout) as e:
+            log.warning("r/%s via %s -> %s; rotating",
+                        sub, _proxy_label(proxy), e)
+            last_err = e
+            time.sleep(1.0)
+            continue
+    raise last_err or RuntimeError("All proxy attempts failed")
+
+
+def _proxy_label(p: dict | None) -> str:
+    if not p:
+        return "no-proxy"
+    url = p.get("http", "")
+    return re.sub(r"//[^@]+@", "//***@", url)
+
 
 
 def post_to_row(child: dict, sub: str) -> dict:
@@ -64,15 +145,20 @@ def post_to_row(child: dict, sub: str) -> dict:
 
 def collect(subreddits: list[str], listing: str = "new",
             pages: int = 5, t: str = "year",
-            sleep: float = 1.5) -> pd.DataFrame:
+            sleep: float = 1.5,
+            proxies: list[dict] | None = None) -> pd.DataFrame:
+    if proxies:
+        log.info("Using %d proxy(ies) with rotation.", len(proxies))
     rows: list[dict] = []
     for sub in subreddits:
         log.info("r/%s [%s]", sub, listing)
         after = None
         for page in range(pages):
             try:
-                resp = fetch_listing(sub, listing=listing, after=after, t=t)
-            except requests.HTTPError as e:
+                resp = fetch_listing(sub, listing=listing, after=after,
+                                     t=t, proxies=proxies)
+            except (requests.HTTPError, requests.ConnectionError,
+                    requests.Timeout) as e:
                 log.warning("r/%s page %d: %s", sub, page, e)
                 break
             data = resp.get("data", {})
@@ -117,10 +203,14 @@ def main() -> None:
     p.add_argument("--output", type=Path, default=RAW_DIR / "reddit.parquet")
     p.add_argument("--incremental", action="store_true",
                    help="Append new posts to existing parquet (dedup by id).")
+    p.add_argument("--proxies", default=None,
+                   help="Comma/newline-separated proxy entries "
+                        "(host:port:user:pass). Falls back to REDDIT_PROXIES env.")
     args = p.parse_args()
 
+    proxies = load_proxies(args.proxies)
     df = collect(args.subreddits, listing=args.listing,
-                 pages=args.pages, t=args.t)
+                 pages=args.pages, t=args.t, proxies=proxies)
     log.info("Collected %d posts from %d subreddits",
              len(df), len(args.subreddits))
     if df.empty:

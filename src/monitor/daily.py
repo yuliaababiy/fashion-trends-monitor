@@ -79,30 +79,15 @@ def collect_incremental(skip_newsapi: bool = False) -> None:
     else:
         log.info("NEWSAPI_KEY missing or skipped; skipping NewsAPI.")
 
-    # Reddit: prefer OAuth (works on data-center IPs); fall back to the
-    # public JSON endpoint when running locally without OAuth credentials.
-    has_oauth = all(os.getenv(k) for k in (
-        "REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET",
-        "REDDIT_USERNAME", "REDDIT_PASSWORD", "REDDIT_USER_AGENT",
-    ))
-    if has_oauth:
-        _step(
-            "Reddit OAuth (incremental)",
-            [PY, "-m", "src.collect.reddit_oauth",
-             "--listing", "new", "--pages", "3", "--incremental"],
-            optional=True,
-        )
-    elif os.getenv("GITHUB_ACTIONS") == "true":
-        log.info("No Reddit OAuth credentials and running on GitHub "
-                 "Actions — skipping Reddit (public JSON is blocked on "
-                 "data-center IPs).")
-    else:
-        _step(
-            "Reddit JSON (incremental)",
-            [PY, "-m", "src.collect.reddit_json",
-             "--listing", "new", "--pages", "3", "--incremental"],
-            optional=True,
-        )
+    # Reddit: use the public JSON endpoint. On data-center IPs (GitHub
+    # Actions) we route through residential proxies provided via the
+    # REDDIT_PROXIES env var; locally we go direct.
+    _step(
+        "Reddit JSON (incremental)",
+        [PY, "-m", "src.collect.reddit_json",
+         "--listing", "new", "--pages", "3", "--incremental"],
+        optional=True,
+    )
 
     _step(
         "Mastodon (incremental)",
