@@ -143,6 +143,8 @@ def run_analytics(transform_only: bool = True) -> None:
     _step("Forecast topics", [PY, "-m", "src.forecast.run_all"])
     _step("Emerging analysis", [PY, "-m", "src.analysis.emerging"],
           optional=True)
+    _step("Spike detection", [PY, "-m", "src.analysis.spikes"],
+          optional=True)
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +209,16 @@ def format_alert(diff: dict) -> str | None:
     new_rising = diff.get("new_rising", [])
     big_changes = diff.get("big_changes", [])
 
-    if not new_rising and not big_changes:
+    spikes_df = None
+    spikes_path = METRICS_DIR / "spike_terms.csv"
+    if spikes_path.exists():
+        try:
+            spikes_df = pd.read_csv(spikes_path)
+        except Exception:
+            spikes_df = None
+
+    has_spikes = spikes_df is not None and not spikes_df.empty
+    if not new_rising and not big_changes and not has_spikes:
         return None
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -233,6 +244,16 @@ def format_alert(diff: dict) -> str | None:
             kw = (r.get("keywords") or "")[:60]
             lines.append(
                 f"  • #{int(r['topic_id'])} _{kw}_  Δ {r['delta_pp']:+.1f} в.п."
+            )
+        lines.append("")
+
+    if has_spikes:
+        top = spikes_df.head(5)
+        lines.append(f"🔥 *Сплески слів ({len(spikes_df)})*:")
+        for _, r in top.iterrows():
+            lines.append(
+                f"  • _{r['term']}_  ×{r['spike_ratio']:.1f}  "
+                f"(z={r['z_score']:.1f}, n={int(r['recent_count'])})"
             )
         lines.append("")
 

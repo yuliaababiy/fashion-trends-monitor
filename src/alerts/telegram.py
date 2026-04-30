@@ -117,10 +117,13 @@ def _main_menu_kb(chat_id: int | None = None) -> dict:
     rows = [
         [
             {"text": "🚀 Тренди", "callback_data": "menu:trends"},
-            {"text": "📊 Статус", "callback_data": "menu:status"},
+            {"text": "� Сплески", "callback_data": "menu:spikes"},
         ],
         [
+            {"text": "📊 Статус", "callback_data": "menu:status"},
             {"text": "▶️ Збір даних", "callback_data": "menu:run"},
+        ],
+        [
             {"text": "🔁 Перенавчання", "callback_data": "menu:retrain"},
         ],
     ]
@@ -306,6 +309,32 @@ def cmd_status(chat_id: int, _args: str):
     lines.append(f"`forecasts.parquet`: {_file_age(PROCESSED_DIR / 'forecasts.parquet')}")
     lines.append(f"`emerging_topics.csv`: {_file_age(METRICS_DIR / 'emerging_topics.csv')}")
     lines.append(f"`emerging_trends.csv`: {_file_age(METRICS_DIR / 'emerging_trends.csv')}")
+    lines.append(f"`spike_terms.csv`: {_file_age(METRICS_DIR / 'spike_terms.csv')}")
+    return {"text": "\n".join(lines), "reply_markup": _back_kb()}
+
+
+def cmd_spikes(chat_id: int, _args: str):
+    p = METRICS_DIR / "spike_terms.csv"
+    if not p.exists():
+        return {
+            "text": "Немає `spike_terms.csv` — аналіз ще не запускався.",
+            "reply_markup": _back_kb(),
+        }
+    df = pd.read_csv(p)
+    if df.empty:
+        return {
+            "text": "Наразі сплесків не виявлено — частотність слів стабільна.",
+            "reply_markup": _back_kb(),
+        }
+    top = df.head(10)
+    lines = ["🔥 *Сплески слів (TF-IDF)*"]
+    for _, r in top.iterrows():
+        lines.append(
+            f"  • _{r['term']}_  ×{float(r['spike_ratio']):.1f}  "
+            f"(z={float(r['z_score']):.1f}, n={int(r['recent_count'])})"
+        )
+    lines.append("")
+    lines.append("_×— відношення до бази; z — відхилення від середнього; n — згадок за останній тиждень._")
     return {"text": "\n".join(lines), "reply_markup": _back_kb()}
 
 
@@ -364,6 +393,7 @@ HANDLERS = {
     "/help": cmd_help,
     "/trends": cmd_trends,
     "/topic": cmd_topic,
+    "/spikes": cmd_spikes,
     "/status": cmd_status,
     "/run": cmd_run,
     "/retrain": cmd_retrain,
@@ -423,6 +453,7 @@ def _handle_callback(cb: dict) -> None:
     if kind == "menu":
         cmd_map = {
             "help": "/help", "trends": "/trends", "status": "/status",
+            "spikes": "/spikes",
             "run": "/run", "retrain": "/retrain",
             "mute": "/mute", "unmute": "/unmute",
         }
