@@ -2,7 +2,7 @@ name: Daily monitor
 
 on:
   schedule:
-    - cron: "0 7 * * *"     # 07:00 UTC every day
+    - cron: "13 7 * * *"    # 07:13 UTC daily (off-peak to avoid scheduler delay)
   workflow_dispatch: {}
 
 permissions:

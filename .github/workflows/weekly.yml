@@ -2,7 +2,7 @@ name: Weekly retrain
 
 on:
   schedule:
-    - cron: "0 20 * * 0"    # 20:00 UTC every Sunday
+    - cron: "17 20 * * 0"   # Sun 20:17 UTC (off-peak)
   workflow_dispatch: {}
 
 permissions:
