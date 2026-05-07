@@ -30,6 +30,9 @@ def main() -> None:
                         help="Re-fetch all keywords even if already present.")
     parser.add_argument("--keywords", nargs="*", default=None,
                         help="Override keyword list (default = FASHION_KEYWORDS).")
+    parser.add_argument("--proxy", action="append", default=None,
+                        help="Proxy URL (https://user:pass@host:port). "
+                             "Pass multiple times to rotate.")
     args = parser.parse_args()
 
     target_keywords = args.keywords or FASHION_KEYWORDS
@@ -52,7 +55,8 @@ def main() -> None:
         return
 
     log.info("Fetching %d new keywords: %s", len(missing), missing)
-    new_df = fetch_trends(missing, args.timeframe, args.geo)
+    new_df = fetch_trends(missing, args.timeframe, args.geo,
+                          proxies=args.proxy)
 
     if new_df.empty:
         log.warning("Got no data; nothing to merge.")

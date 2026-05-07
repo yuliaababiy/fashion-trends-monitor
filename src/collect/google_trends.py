@@ -50,6 +50,7 @@ def fetch_trends(
     timeframe: str = "today 5-y",
     geo: str = "",
     sleep_between: float = 8.0,
+    proxies: list[str] | None = None,
 ) -> pd.DataFrame:
     """Fetch interest-over-time, one keyword per call (no anchor scaling).
 
@@ -58,12 +59,20 @@ def fetch_trends(
     absolute values is therefore not meaningful — we forecast each series
     independently anyway, so this is fine.
 
+    ``proxies`` — optional list like ``["https://user:pass@host:port", ...]``.
+    pytrends rotates through them automatically, which often unblocks the
+    public Trends endpoint when a single IP is rate-limited.
+
     Returns long-format DataFrame: [date, keyword, interest].
     """
     from pytrends.request import TrendReq
 
-    pytrends = TrendReq(hl="en-US", tz=0, retries=2, backoff_factor=2.0,
-                        requests_args={"headers": {"Accept-Language": "en-US,en;q=0.9"}})
+    kwargs = dict(hl="en-US", tz=0, retries=2, backoff_factor=2.0,
+                  requests_args={"headers": {"Accept-Language": "en-US,en;q=0.9"}})
+    if proxies:
+        kwargs["proxies"] = list(proxies)
+        log.info("Using %d proxy endpoint(s) (rotated by pytrends)", len(proxies))
+    pytrends = TrendReq(**kwargs)
 
     pieces: list[pd.DataFrame] = []
     for kw in keywords:
@@ -97,11 +106,15 @@ def main() -> None:
                         help="Country code (e.g., 'US'). Empty = worldwide.")
     parser.add_argument("--output", type=Path,
                         default=RAW_DIR / "google_trends.parquet")
+    parser.add_argument("--proxy", action="append", default=None,
+                        help="Proxy URL (e.g. https://user:pass@host:port). "
+                             "Pass multiple times to rotate.")
     args = parser.parse_args()
 
     log.info("Fetching Google Trends for %d keywords (%s, geo=%s)",
              len(args.keywords), args.timeframe, args.geo or "worldwide")
-    df = fetch_trends(args.keywords, args.timeframe, args.geo)
+    df = fetch_trends(args.keywords, args.timeframe, args.geo,
+                      proxies=args.proxy)
     if df.empty:
         log.warning("No data returned.")
         return

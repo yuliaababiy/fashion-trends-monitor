@@ -1,34 +1,63 @@
-# Google Trends backfill (run later via VPN)
+# Google Trends backfill
 
-The Google Trends public endpoint is currently rate-limited from this IP
-(`pytrends` returns `RetryError(... HTTPSConnectionPool(host='trends.google.com'))`
-after exhausting retries). All other parts of the pipeline work without
-it — internal topic timeseries are already the primary ground truth.
+Google Trends банить **по IP**, не по акаунту. З поточної IP `pytrends`
+повертає `RetryError(... HTTPSConnectionPool(host='trends.google.com'))`
+після всіх ретраїв.
 
-## When you have a VPN / different IP, run:
+Решта пайплайну від цього не страждає — внутрішні `topic_timeseries` є
+основним джерелом ground truth у бектесті.
+
+## Варіант 1 — через VPN
+
+Просто підніми VPN на іншу країну і запусти:
 
 ```powershell
 .venv\Scripts\Activate.ps1
 $env:PYTHONPATH = "."
 
-# extra fashion keywords for richer trend coverage
 python scripts/backfill_google_trends.py `
   --timeframe "today 5-y" `
   --keywords "streetwear" "gorpcore" "barbiecore" "coquette" `
               "coastal grandmother" "office siren" "mob wife" "tomato girl"
 ```
 
-The collector (`src/collect/google_trends.py`) already:
+## Варіант 2 — через HTTP/SOCKS проксі
 
-- fetches **one keyword at a time** (single-keyword payloads are far
-  less likely to be 429-blocked),
-- retries each keyword up to 5× with exponential backoff (15s → 240s),
-- sleeps 8s between successful fetches,
-- merges new rows into the existing `data/raw/google_trends.parquet`
-  without losing what's already cached.
+Скрипт уміє ротувати кілька проксі (передаєш `--proxy` стільки разів,
+скільки треба, pytrends чергує їх між запитами):
 
-After it finishes, re-run the downstream pipeline so the new keywords
-flow through the dashboards & backtest:
+```powershell
+python scripts/backfill_google_trends.py `
+  --timeframe "today 5-y" `
+  --proxy "https://user:pass@proxy1.example.com:8080" `
+  --proxy "https://user:pass@proxy2.example.com:8080" `
+  --keywords "streetwear" "gorpcore" "barbiecore"
+```
+
+Що працює та що ні:
+
+- Residential / mobile проксі (Bright Data, Smartproxy, Oxylabs,
+  IPRoyal, або просто мобільний хотспот) — Google зазвичай пропускає.
+- Datacenter проксі (DigitalOcean, AWS, Hetzner) — у 90% випадків
+  теж видають 429: ці підмережі давно у блок-листі Google.
+- Безкоштовні публічні проксі — переважно вже забанені скрейперами
+  до тебе.
+- Формат: `http://...`, `https://...`, або `socks5://...`. Якщо
+  проксі з логіном — `https://user:pass@host:port`.
+
+Якщо один з проксі сам забанений, у логах побачиш `429` саме на ньому;
+pytrends просто перейде на наступний у списку.
+
+## Що collector уже робить, аби не дратувати API
+
+- запитує по **одному** ключу за раз (single-keyword payloads майже не
+  ловлять 429),
+- 5 ретраїв з експоненційним backoff: 15s → 30s → 60s → 120s → 240s,
+- 8 секунд паузи між успішними запитами,
+- зливає нові дані з існуючим `data/raw/google_trends.parquet` без
+  втрати того, що вже є в кеші.
+
+## Після успішного збору — переган метрик
 
 ```powershell
 python -m src.eval.metrics
