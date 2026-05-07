@@ -1,21 +1,21 @@
 topic_id,keywords,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
-0,"char, ootd, new, goth, game, april, photo, streetwear, nail, old, star, selfie, denim, netflix, gothic",107.88,10.31,946.5,24.92,-76.9,Declining,LSTM
-11,"art, darkacademia, music, char, day, olivia, vintage, year, new, rodrigo, commission, fashion, hat, culture, love",41.0,3.5,1071.4,8.78,-78.6,Declining,LSTM
-6,"hair, skin, beauty, like, product, good, makeup, face, say, time, use, day, feel, dry, year",80.0,4.62,1633.3,13.44,-83.2,Declining,LSTM
-5,"thrifte, vintage, book, cottagecore, dark, char, academia, thrift, wall, art, find, floral, today, advertisements, cotta",58.25,4.62,1162.1,6.16,-89.4,Declining,LSTM
-2,"fashion, gala, met, year, culture, westwood, designer, new, say, arts, char, week, time, australian, night",38.62,1.15,3247.5,3.28,-91.5,Declining,LSTM
-7,"sale, char, size, chanel, price, brand, deal, new, free, gap, good, find, shipping, year, store",80.5,2.38,3275.8,6.11,-92.4,Declining,LSTM
-19,,51.0,1.27,3918.2,3.66,-92.8,Declining,LSTM
-4,"say, fashion, people, like, trend, man, year, woman, time, new, see, bag, think, way, come",194.0,13.19,1370.6,12.68,-93.5,Declining,LSTM
-18,,77.38,1.58,4806.7,4.24,-94.5,Declining,LSTM
-1,"idea, perfect, design, feel, space, create, char, stylish, garden, beautifully, ideas, like, room, outdoor, color",106.88,2.04,5142.9,4.62,-95.7,Declining,LSTM
-15,"like, fashion, link, thread, good, culture, picture, char, newspaper, arthistory, dress, album, answer, know, item",249.62,7.96,3035.4,9.33,-96.3,Declining,LSTM
-8,"fashion, dress, say, film, prada, red, paris, designer, new, black, year, like, devil, woman, chanel",33.88,0.35,9686.1,0.96,-97.2,Declining,LSTM
-10,"char, spring, fashion, summer, shoe, trend, short, new, denim, print, coachella, story, dress, season, jean",23.5,0.62,3718.7,0.67,-97.2,Declining,LSTM
-9,"fashion, say, brand, new, industry, company, year, week, vogue, designer, business, include, sustainable, fur, global",74.88,2.0,3643.8,1.94,-97.4,Declining,LSTM
-13,"model, dress, fashion, vintage, sexy, nude, pin, year, nsfw, sparkle, day, porn, designer, say, coveti",47.12,1.42,3211.5,1.16,-97.5,Declining,LSTM
-17,,43.0,2.04,2009.4,0.86,-98.0,Declining,LSTM
-3,"fashion, designer, brand, year, collection, design, week, catwalk, say, new, gucci, creative, director, luxury, dress",99.12,1.35,7263.6,1.18,-98.8,Declining,LSTM
-16,,20.25,0.31,6481.2,0.23,-98.9,Declining,LSTM
-14,"dress, like, shirt, feel, jean, good, trouser, pair, work, shoe, think, day, way, want, jacket",111.5,1.73,6342.2,0.52,-99.5,Declining,LSTM
-12,"say, fashion, clothe, work, brand, people, year, like, think, want, thing, new, clothing, sell, time",46.0,0.92,4883.3,0.16,-99.7,Declining,LSTM
+0,"char, ootd, new, goth, game, april, photo, streetwear, nail, old, star, selfie, denim, netflix, gothic",118.75,10.19,1065.1,22.76,-80.8,Declining,LSTM
+6,"hair, skin, beauty, like, product, good, makeup, face, say, time, use, day, feel, dry, year",87.38,4.62,1793.1,15.76,-82.0,Declining,LSTM
+11,"art, darkacademia, music, char, day, olivia, vintage, year, new, rodrigo, commission, fashion, hat, culture, love",47.25,3.38,1296.0,8.11,-82.8,Declining,LSTM
+5,"thrifte, vintage, book, cottagecore, dark, char, academia, thrift, wall, art, find, floral, today, advertisements, cotta",63.38,4.65,1261.8,6.52,-89.7,Declining,LSTM
+17,,46.62,2.12,2104.1,3.88,-91.7,Declining,LSTM
+18,,86.12,1.65,5107.6,6.02,-93.0,Declining,LSTM
+4,"say, fashion, people, like, trend, man, year, woman, time, new, see, bag, think, way, come",211.88,13.08,1520.2,13.56,-93.6,Declining,LSTM
+19,,55.38,1.31,4134.6,3.41,-93.8,Declining,LSTM
+2,"fashion, gala, met, year, culture, westwood, designer, new, say, arts, char, week, time, australian, night",41.88,1.15,3529.2,2.26,-94.6,Declining,LSTM
+9,"fashion, say, brand, new, industry, company, year, week, vogue, designer, business, include, sustainable, fur, global",84.75,2.12,3906.4,4.44,-94.8,Declining,LSTM
+7,"sale, char, size, chanel, price, brand, deal, new, free, gap, good, find, shipping, year, store",86.38,2.62,3202.6,4.44,-94.9,Declining,LSTM
+1,"idea, perfect, design, feel, space, create, char, stylish, garden, beautifully, ideas, like, room, outdoor, color",119.75,2.08,5665.7,4.83,-96.0,Declining,LSTM
+15,"like, fashion, link, thread, good, culture, picture, char, newspaper, arthistory, dress, album, answer, know, item",278.62,7.88,3433.8,8.76,-96.9,Declining,LSTM
+10,"char, spring, fashion, summer, shoe, trend, short, new, denim, print, coachella, story, dress, season, jean",28.0,0.58,4753.3,0.72,-97.4,Declining,LSTM
+16,,22.5,0.31,7212.5,0.55,-97.6,Declining,LSTM
+13,"model, dress, fashion, vintage, sexy, nude, pin, year, nsfw, sparkle, day, porn, designer, say, coveti",52.5,1.19,4303.2,0.93,-98.2,Declining,LSTM
+8,"fashion, dress, say, film, prada, red, paris, designer, new, black, year, like, devil, woman, chanel",36.88,0.27,13596.4,0.4,-98.9,Declining,LSTM
+3,"fashion, designer, brand, year, collection, design, week, catwalk, say, new, gucci, creative, director, luxury, dress",111.75,1.42,7752.7,0.63,-99.4,Declining,LSTM
+12,"say, fashion, clothe, work, brand, people, year, like, think, want, thing, new, clothing, sell, time",52.12,1.04,4919.4,0.28,-99.5,Declining,LSTM
+14,"dress, like, shirt, feel, jean, good, trouser, pair, work, shoe, think, day, way, want, jacket",132.75,1.69,7744.3,0.35,-99.7,Declining,LSTM
