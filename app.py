@@ -157,6 +157,24 @@ def load_backtest_models() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=600)
+def load_lead_time_summary() -> pd.DataFrame:
+    p = BACKTEST_DIR / "lead_time_summary.csv"
+    return pd.read_csv(p) if p.exists() else pd.DataFrame()
+
+
+@st.cache_data(ttl=600)
+def load_lead_time_hist() -> pd.DataFrame:
+    p = BACKTEST_DIR / "lead_time_hist_topics.csv"
+    return pd.read_csv(p) if p.exists() else pd.DataFrame()
+
+
+@st.cache_data(ttl=600)
+def load_baseline_compare() -> pd.DataFrame:
+    p = BACKTEST_DIR / "precision_vs_baseline.csv"
+    return pd.read_csv(p) if p.exists() else pd.DataFrame()
+
+
+@st.cache_data(ttl=600)
 def load_case_index() -> pd.DataFrame:
     p = CASES_DIR / "index.csv"
     return pd.read_csv(p) if p.exists() else pd.DataFrame()
@@ -605,6 +623,70 @@ with tab_backtest:
                     height=320, margin=dict(l=10, r=10, t=40, b=10),
                 )
                 st.plotly_chart(fig, width="stretch")
+
+        # ---- lead time ----------------------------------------------------
+        lt_sum = load_lead_time_summary()
+        lt_hist = load_lead_time_hist()
+        if not lt_sum.empty:
+            st.subheader("⏱️ Лід-тайм: за скільки тижнів детектор сигналізує до піка")
+            st.caption(
+                "Серед детекцій типу Rising, які реально вистрелили — на якому "
+                "тижні в межах 8-тижневого горизонту знаходився пік. Що більше "
+                "тижнів — то раніше стейкхолдери отримують попередження."
+            )
+            cols = st.columns(min(len(lt_sum), 2))
+            for i, (_, r) in enumerate(lt_sum.iterrows()):
+                with cols[i % len(cols)]:
+                    st.metric(
+                        f"Канал: {r['channel']}",
+                        f"{r['mean_weeks_to_peak']:.1f} тиж",
+                        f"медіана {r['median_weeks_to_peak']:.0f} • "
+                        f"≥4 тиж форы у {r['early_warning_pct']}% детекцій",
+                    )
+            if not lt_hist.empty:
+                fig = go.Figure(go.Bar(
+                    x=lt_hist["weeks_to_peak"], y=lt_hist["n_hits"],
+                    marker_color=PALETTE[1],
+                    text=lt_hist["n_hits"], textposition="outside",
+                ))
+                fig.update_layout(
+                    title="Розподіл лід-тайму (теми)",
+                    xaxis_title="Тижнів до піка",
+                    yaxis_title="К-сть успішних детекцій",
+                    height=300, margin=dict(l=10, r=10, t=40, b=10),
+                )
+                st.plotly_chart(fig, width="stretch")
+
+        # ---- baseline comparison ------------------------------------------
+        cmp_df = load_baseline_compare()
+        if not cmp_df.empty:
+            st.subheader("🆚 Детектор vs наївний baseline (top-K за останні 4 тижні)")
+            st.caption(
+                "Питання: чи дійсно складна модель краща за просту евристику "
+                "«візьми те, що було найпопулярніше минулого тижня»? "
+                "lift = precision детектора / precision baseline. "
+                "abs_gain_pp — приріст у відсоткових пунктах."
+            )
+            st.dataframe(cmp_df, width="stretch", hide_index=True)
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                name="Детектор", x=cmp_df["K"],
+                y=cmp_df["detector_precision"], marker_color=PALETTE[0],
+                text=cmp_df["detector_precision"].round(2), textposition="outside",
+            ))
+            fig.add_trace(go.Bar(
+                name="Naive top-K", x=cmp_df["K"],
+                y=cmp_df["baseline_precision"], marker_color=PALETTE[2],
+                text=cmp_df["baseline_precision"].round(2), textposition="outside",
+            ))
+            fig.update_layout(
+                barmode="group",
+                xaxis_title="K", yaxis_title="Precision@K",
+                yaxis=dict(range=[0, 1.05]),
+                height=340, margin=dict(l=10, r=10, t=20, b=10),
+                legend=dict(orientation="h"),
+            )
+            st.plotly_chart(fig, width="stretch")
 
         # ---- detections explorer ------------------------------------------
         st.subheader("🔍 Усі детекції")
