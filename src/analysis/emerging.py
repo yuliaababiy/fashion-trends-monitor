@@ -14,12 +14,13 @@ Outputs:
 """
 from __future__ import annotations
 
+import argparse
 import logging
 from pathlib import Path
 
 import pandas as pd
 
-from src.config import METRICS_DIR, PROCESSED_DIR
+from src.config import METRICS_DIR, PROCESSED_DIR, RAW_DIR
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
@@ -81,16 +82,23 @@ def _row_stats(history: pd.Series, future: pd.Series | None) -> dict:
     )
 
 
-def emerging_topics() -> pd.DataFrame:
-    ts_path = PROCESSED_DIR / "topic_timeseries.parquet"
-    fc_path = PROCESSED_DIR / "forecasts.parquet"
-    topics_path = PROCESSED_DIR / "lda_topics.csv"
+def emerging_topics(
+    ts_path: Path | None = None,
+    fc_path: Path | None = None,
+    topics_path: Path | None = None,
+    as_of: pd.Timestamp | None = None,
+) -> pd.DataFrame:
+    ts_path = Path(ts_path) if ts_path else PROCESSED_DIR / "topic_timeseries.parquet"
+    fc_path = Path(fc_path) if fc_path else PROCESSED_DIR / "forecasts.parquet"
+    topics_path = Path(topics_path) if topics_path else PROCESSED_DIR / "lda_topics.csv"
 
     if not ts_path.exists():
-        log.warning("No topic_timeseries.parquet")
+        log.warning("No %s", ts_path)
         return pd.DataFrame()
 
     ts = pd.read_parquet(ts_path)
+    if as_of is not None:
+        ts = ts[pd.to_datetime(ts["period"]) <= pd.to_datetime(as_of)].copy()
     fc = pd.read_parquet(fc_path) if fc_path.exists() else pd.DataFrame()
     topics = pd.read_csv(topics_path) if topics_path.exists() else pd.DataFrame()
 
@@ -130,16 +138,21 @@ def emerging_topics() -> pd.DataFrame:
     return out
 
 
-def emerging_trends() -> pd.DataFrame:
-    from src.config import RAW_DIR
-    ts_path = RAW_DIR / "google_trends.parquet"
-    fc_path = PROCESSED_DIR / "trends_forecasts.parquet"
+def emerging_trends(
+    ts_path: Path | None = None,
+    fc_path: Path | None = None,
+    as_of: pd.Timestamp | None = None,
+) -> pd.DataFrame:
+    ts_path = Path(ts_path) if ts_path else RAW_DIR / "google_trends.parquet"
+    fc_path = Path(fc_path) if fc_path else PROCESSED_DIR / "trends_forecasts.parquet"
 
     if not ts_path.exists():
         log.warning("No google_trends.parquet")
         return pd.DataFrame()
 
     ts = pd.read_parquet(ts_path)
+    if as_of is not None:
+        ts = ts[pd.to_datetime(ts["date"]) <= pd.to_datetime(as_of)].copy()
     fc = pd.read_parquet(fc_path) if fc_path.exists() else pd.DataFrame()
 
     chosen_model = _pick_model(fc)
@@ -171,21 +184,45 @@ def emerging_trends() -> pd.DataFrame:
 
 
 def main() -> None:
-    METRICS_DIR.mkdir(parents=True, exist_ok=True)
+    p = argparse.ArgumentParser()
+    p.add_argument("--ts-topics", type=Path,
+                   default=PROCESSED_DIR / "topic_timeseries.parquet")
+    p.add_argument("--fc-topics", type=Path,
+                   default=PROCESSED_DIR / "forecasts.parquet")
+    p.add_argument("--ts-trends", type=Path,
+                   default=RAW_DIR / "google_trends.parquet")
+    p.add_argument("--fc-trends", type=Path,
+                   default=PROCESSED_DIR / "trends_forecasts.parquet")
+    p.add_argument("--topics-csv", type=Path,
+                   default=PROCESSED_DIR / "lda_topics.csv")
+    p.add_argument("--out-topics", type=Path,
+                   default=METRICS_DIR / "emerging_topics.csv")
+    p.add_argument("--out-trends", type=Path,
+                   default=METRICS_DIR / "emerging_trends.csv")
+    p.add_argument("--as-of", default=None,
+                   help="YYYY-MM-DD; backtest mode — ignore data after this date.")
+    args = p.parse_args()
 
-    df_topics = emerging_topics()
+    args.out_topics.parent.mkdir(parents=True, exist_ok=True)
+    args.out_trends.parent.mkdir(parents=True, exist_ok=True)
+    as_of = pd.to_datetime(args.as_of) if args.as_of else None
+
+    df_topics = emerging_topics(
+        ts_path=args.ts_topics, fc_path=args.fc_topics,
+        topics_path=args.topics_csv, as_of=as_of,
+    )
     if not df_topics.empty:
-        out = METRICS_DIR / "emerging_topics.csv"
-        df_topics.to_csv(out, index=False, encoding="utf-8")
-        log.info("Saved %s (%d rows)", out, len(df_topics))
+        df_topics.to_csv(args.out_topics, index=False, encoding="utf-8")
+        log.info("Saved %s (%d rows)", args.out_topics, len(df_topics))
         log.info("\nTop 5 rising topics:\n%s",
                  df_topics.head(5).to_string(index=False))
 
-    df_trends = emerging_trends()
+    df_trends = emerging_trends(
+        ts_path=args.ts_trends, fc_path=args.fc_trends, as_of=as_of,
+    )
     if not df_trends.empty:
-        out = METRICS_DIR / "emerging_trends.csv"
-        df_trends.to_csv(out, index=False, encoding="utf-8")
-        log.info("Saved %s (%d rows)", out, len(df_trends))
+        df_trends.to_csv(args.out_trends, index=False, encoding="utf-8")
+        log.info("Saved %s (%d rows)", args.out_trends, len(df_trends))
         log.info("\nGoogle Trends ranking:\n%s",
                  df_trends.to_string(index=False))
 

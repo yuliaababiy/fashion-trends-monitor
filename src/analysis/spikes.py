@@ -14,9 +14,11 @@ Run::
 """
 from __future__ import annotations
 
+import argparse
 import logging
 import re
 from collections import Counter
+from pathlib import Path
 
 import pandas as pd
 
@@ -69,13 +71,18 @@ def _weekly_counts(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def detect_spikes() -> pd.DataFrame:
-    src = INTERIM_DIR / "clean.parquet"
+def detect_spikes(input_path: Path | None = None,
+                  as_of: pd.Timestamp | None = None) -> pd.DataFrame:
+    src = Path(input_path) if input_path else INTERIM_DIR / "clean.parquet"
     if not src.exists():
         log.warning("No %s — run preprocessor first", src)
         return pd.DataFrame()
 
     df = pd.read_parquet(src, columns=["tokens", "week"])
+    if as_of is not None:
+        before = len(df)
+        df = df[pd.to_datetime(df["week"]) <= pd.to_datetime(as_of)].copy()
+        log.info("as_of=%s: filtered %d -> %d rows", as_of, before, len(df))
     if df.empty:
         return pd.DataFrame()
 
@@ -132,9 +139,17 @@ def detect_spikes() -> pd.DataFrame:
 
 
 def main() -> None:
-    METRICS_DIR.mkdir(parents=True, exist_ok=True)
-    df = detect_spikes()
-    out = METRICS_DIR / "spike_terms.csv"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", type=Path, default=INTERIM_DIR / "clean.parquet")
+    parser.add_argument("--output", type=Path, default=METRICS_DIR / "spike_terms.csv")
+    parser.add_argument("--as-of", default=None,
+                        help="YYYY-MM-DD; only consider data up to this date (backtest mode).")
+    args = parser.parse_args()
+
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    as_of = pd.to_datetime(args.as_of) if args.as_of else None
+    df = detect_spikes(args.input, as_of=as_of)
+    out = args.output
     if df.empty:
         log.info("No spikes detected (or insufficient history).")
         # Still write empty file so consumers see it.

@@ -1,0 +1,21 @@
+topic_id,keywords,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
+13,"model, dress, fashion, vintage, sexy, nude, pin, year, nsfw, sparkle, day, porn, designer, say, coveti",8.75,0.46,1795.8,44.88,412.9,Rising,LSTM
+12,"say, fashion, clothe, work, brand, people, year, like, think, want, thing, new, clothing, sell, time",4.88,0.69,604.2,22.11,353.6,Rising,LSTM
+17,,6.38,1.62,294.6,25.21,295.5,Rising,LSTM
+16,,3.12,0.31,915.6,11.3,261.6,Rising,LSTM
+2,"fashion, gala, met, year, culture, westwood, designer, new, say, arts, char, week, time, australian, night",4.38,0.54,712.5,13.57,210.2,Rising,LSTM
+14,"dress, like, shirt, feel, jean, good, trouser, pair, work, shoe, think, day, way, want, jacket",4.88,0.96,407.0,12.73,161.2,Rising,LSTM
+18,,8.5,0.88,860.9,22.19,161.0,Rising,LSTM
+8,"fashion, dress, say, film, prada, red, paris, designer, new, black, year, like, devil, woman, chanel",4.25,0.19,2110.0,10.12,138.2,Rising,LSTM
+19,,5.38,0.5,975.0,12.48,132.2,Rising,LSTM
+10,"char, spring, fashion, summer, shoe, trend, short, new, denim, print, coachella, story, dress, season, jean",2.0,0.35,477.8,4.34,117.0,Rising,LSTM
+6,"hair, skin, beauty, like, product, good, makeup, face, say, time, use, day, feel, dry, year",9.0,3.58,151.6,18.9,110.0,Rising,LSTM
+3,"fashion, designer, brand, year, collection, design, week, catwalk, say, new, gucci, creative, director, luxury, dress",7.38,0.81,813.1,15.17,105.7,Rising,LSTM
+9,"fashion, say, brand, new, industry, company, year, week, vogue, designer, business, include, sustainable, fur, global",4.75,1.81,162.8,8.55,79.9,Rising,LSTM
+11,"art, darkacademia, music, char, day, olivia, vintage, year, new, rodrigo, commission, fashion, hat, culture, love",5.62,2.54,121.6,8.86,57.5,Rising,LSTM
+15,"like, fashion, link, thread, good, culture, picture, char, newspaper, arthistory, dress, album, answer, know, item",33.25,3.08,980.6,44.35,33.4,Rising,LSTM
+0,"char, ootd, new, goth, game, april, photo, streetwear, nail, old, star, selfie, denim, netflix, gothic",30.88,5.23,490.3,38.83,25.8,Rising,LSTM
+5,"thrifte, vintage, book, cottagecore, dark, char, academia, thrift, wall, art, find, floral, today, advertisements, cotta",8.12,3.62,124.7,9.14,12.5,Stable,LSTM
+4,"say, fashion, people, like, trend, man, year, woman, time, new, see, bag, think, way, come",38.75,6.73,475.7,34.12,-11.9,Stable,LSTM
+7,"sale, char, size, chanel, price, brand, deal, new, free, gap, good, find, shipping, year, store",6.0,1.42,321.6,5.12,-14.7,Stable,LSTM
+1,"idea, perfect, design, feel, space, create, char, stylish, garden, beautifully, ideas, like, room, outdoor, color",4.38,1.54,184.4,3.71,-15.1,Declining,LSTM

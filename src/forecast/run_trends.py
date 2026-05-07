@@ -25,13 +25,27 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 log = logging.getLogger(__name__)
 
 
-def evaluate_keyword(group: pd.DataFrame, test_size: int) -> tuple[list[dict], pd.DataFrame]:
+def evaluate_keyword(
+    group: pd.DataFrame,
+    test_size: int,
+    as_of: pd.Timestamp | None = None,
+    horizon: int = 8,
+) -> tuple[list[dict], pd.DataFrame]:
     g = group.sort_values("date").reset_index(drop=True)
-    if len(g) < test_size + 16:
-        return [], pd.DataFrame()
 
-    train = g.iloc[:-test_size]
-    test = g.iloc[-test_size:]
+    if as_of is not None:
+        as_of_ts = pd.to_datetime(as_of)
+        date_dt = pd.to_datetime(g["date"])
+        train = g[date_dt <= as_of_ts]
+        test = g[date_dt > as_of_ts].head(horizon)
+        if len(train) < 16 or test.empty:
+            return [], pd.DataFrame()
+    else:
+        if len(g) < test_size + 16:
+            return [], pd.DataFrame()
+        train = g.iloc[:-test_size]
+        test = g.iloc[-test_size:]
+
     df_train = pd.DataFrame({"ds": train["date"], "y": train["interest"]})
     y_test = test["interest"].values
 
@@ -66,16 +80,21 @@ def main() -> None:
                         default=METRICS_DIR / "trends_metrics.csv")
     parser.add_argument("--forecasts-out", type=Path,
                         default=PROCESSED_DIR / "trends_forecasts.parquet")
+    parser.add_argument("--as-of", default=None,
+                        help="YYYY-MM-DD: rolling-origin backtest.")
+    parser.add_argument("--horizon", type=int, default=8)
     args = parser.parse_args()
 
     df = pd.read_parquet(args.input)
     df["date"] = pd.to_datetime(df["date"])
     log.info("Loaded %d rows, %d keywords", len(df), df["keyword"].nunique())
 
+    as_of = pd.to_datetime(args.as_of) if args.as_of else None
+
     all_m: list[dict] = []
     all_f: list[pd.DataFrame] = []
     for kw, group in tqdm(df.groupby("keyword"), desc="keywords"):
-        rows, fc = evaluate_keyword(group, args.test_size)
+        rows, fc = evaluate_keyword(group, args.test_size, as_of=as_of, horizon=args.horizon)
         for r in rows:
             r["keyword"] = kw
             all_m.append(r)

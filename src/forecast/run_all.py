@@ -54,14 +54,31 @@ def evaluate_topic(
     series: pd.DataFrame,
     test_size: int,
     value_col: str = "count",
+    as_of: pd.Timestamp | None = None,
+    horizon: int = 8,
 ) -> tuple[list[dict], pd.DataFrame]:
-    """Train and evaluate every model on one topic series."""
-    series = series.sort_values("period").reset_index(drop=True)
-    if len(series) < test_size + 16:
-        return [], pd.DataFrame()
+    """Train and evaluate every model on one topic series.
 
-    train = series.iloc[:-test_size]
-    test = series.iloc[-test_size:]
+    If ``as_of`` is provided, use rolling-origin: train on rows where
+    ``period <= as_of`` and use the next ``horizon`` rows (if available)
+    as the held-out test window. Otherwise, fall back to the legacy
+    last-``test_size``-rows split.
+    """
+    series = series.sort_values("period").reset_index(drop=True)
+
+    if as_of is not None:
+        as_of_ts = pd.to_datetime(as_of)
+        period_dt = pd.to_datetime(series["period"])
+        train = series[period_dt <= as_of_ts]
+        test = series[period_dt > as_of_ts].head(horizon)
+        if len(train) < 16 or test.empty:
+            return [], pd.DataFrame()
+    else:
+        if len(series) < test_size + 16:
+            return [], pd.DataFrame()
+        train = series.iloc[:-test_size]
+        test = series.iloc[-test_size:]
+
     df_train = pd.DataFrame({"ds": train["period"], "y": train[value_col]})
     y_test = test[value_col].values
 
@@ -99,16 +116,26 @@ def main() -> None:
                         default=METRICS_DIR / "forecast_metrics.csv")
     parser.add_argument("--forecasts-out", type=Path,
                         default=PROCESSED_DIR / "forecasts.parquet")
+    parser.add_argument("--as-of", default=None,
+                        help="YYYY-MM-DD: rolling-origin backtest — train on data "
+                             "<= as_of, evaluate on next --horizon rows.")
+    parser.add_argument("--horizon", type=int, default=8,
+                        help="Forecast horizon for rolling-origin backtest.")
     args = parser.parse_args()
 
     df = pd.read_parquet(args.input)
     log.info("Loaded %d rows, %d topics", len(df), df["topic_id"].nunique())
 
+    as_of = pd.to_datetime(args.as_of) if args.as_of else None
+
     all_metrics_rows: list[dict] = []
     all_forecasts: list[pd.DataFrame] = []
 
     for topic_id, group in tqdm(df.groupby("topic_id"), desc="topics"):
-        rows, fc = evaluate_topic(group, args.test_size, args.value_col)
+        rows, fc = evaluate_topic(
+            group, args.test_size, args.value_col,
+            as_of=as_of, horizon=args.horizon,
+        )
         for r in rows:
             r["topic_id"] = int(topic_id)
             all_metrics_rows.append(r)

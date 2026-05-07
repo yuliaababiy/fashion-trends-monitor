@@ -1,0 +1,5 @@
+term,recent_count,baseline_mean,baseline_std,z_score,spike_ratio,weeks_seen,first_seen
+miller,15.0,1.0,0.0,14.0,7.5,3,2021-04-05
+butter,17.0,1.25,0.5,10.5,7.56,4,2021-02-15
+yellow,24.0,2.89,2.52,5.99,6.17,9,2021-01-04
+black,36.0,8.42,8.07,3.04,3.82,12,2020-12-28

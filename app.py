@@ -11,7 +11,10 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from src.config import METRICS_DIR, PROCESSED_DIR, RAW_DIR
+from src.config import METRICS_DIR, PROCESSED_DIR, RAW_DIR, REPORTS_DIR
+
+BACKTEST_DIR = REPORTS_DIR / "backtest"
+CASES_DIR = REPORTS_DIR / "case_studies"
 
 st.set_page_config(
     page_title="Прогнозування модних трендів",
@@ -111,6 +114,54 @@ def load_spike_terms() -> pd.DataFrame:
     return pd.read_csv(p) if p.exists() else pd.DataFrame()
 
 
+@st.cache_data(ttl=600)
+def load_backtest_topics() -> pd.DataFrame:
+    p = BACKTEST_DIR / "topic_detections_with_truth.parquet"
+    if not p.exists():
+        return pd.DataFrame()
+    df = pd.read_parquet(p)
+    df["as_of"] = pd.to_datetime(df["as_of"])
+    return df
+
+
+@st.cache_data(ttl=600)
+def load_backtest_trends() -> pd.DataFrame:
+    p = BACKTEST_DIR / "detections_with_truth.parquet"
+    if not p.exists():
+        return pd.DataFrame()
+    df = pd.read_parquet(p)
+    df["as_of"] = pd.to_datetime(df["as_of"])
+    return df
+
+
+@st.cache_data(ttl=600)
+def load_backtest_summary() -> pd.DataFrame:
+    p = BACKTEST_DIR / "summary.csv"
+    return pd.read_csv(p) if p.exists() else pd.DataFrame()
+
+
+@st.cache_data(ttl=600)
+def load_backtest_pak() -> pd.DataFrame:
+    p = BACKTEST_DIR / "precision_at_k.csv"
+    if not p.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(p)
+    df["as_of"] = pd.to_datetime(df["as_of"])
+    return df
+
+
+@st.cache_data(ttl=600)
+def load_backtest_models() -> pd.DataFrame:
+    p = BACKTEST_DIR / "forecast_models_comparison.csv"
+    return pd.read_csv(p) if p.exists() else pd.DataFrame()
+
+
+@st.cache_data(ttl=600)
+def load_case_index() -> pd.DataFrame:
+    p = CASES_DIR / "index.csv"
+    return pd.read_csv(p) if p.exists() else pd.DataFrame()
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -143,9 +194,10 @@ def add_forecast_traces(fig, fc_df, x_col, y_col, models):
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-tab_emerging, tab_spikes, tab_topics, tab_trends, tab_compare = st.tabs(
+tab_emerging, tab_spikes, tab_topics, tab_trends, tab_compare, tab_backtest = st.tabs(
     ["📈 Тренди, що зростають", "🔥 Сплески слів",
-     "🔍 Теми LDA", "🌐 Google Trends", "⚖️ Порівняння моделей"]
+     "🔍 Теми LDA", "🌐 Google Trends", "⚖️ Порівняння моделей",
+     "📊 Ретроспектива"]
 )
 
 
@@ -473,3 +525,135 @@ with tab_compare:
                           height=350,
                           margin=dict(l=10, r=10, t=40, b=10))
         st.plotly_chart(fig, width="stretch")
+
+
+# ============================ BACKTEST TAB =================================
+with tab_backtest:
+    st.markdown(
+        "**Ретроспективна валідація.** Прогон системи в режимі «машини часу» "
+        "по 12 контрольних точках за останні 12 місяців. Для кожної точки "
+        "система працювала так, ніби «сьогодні» — це той день, і не бачила "
+        "майбутніх даних. Потім ми порівняли її детекції з тим, що насправді "
+        "сталося у наступні 8 тижнів."
+    )
+
+    summary = load_backtest_summary()
+    pak = load_backtest_pak()
+    bt_topics = load_backtest_topics()
+    bt_trends = load_backtest_trends()
+    bt_models = load_backtest_models()
+    cases = load_case_index()
+
+    if summary.empty and bt_topics.empty:
+        st.warning(
+            "Дані ретроспективи ще не згенеровано. Запустіть:\n\n"
+            "```\n"
+            "python -m src.eval.backtest --start 2025-05-01 --end 2026-04-01 --step monthly\n"
+            "python -m src.eval.metrics\n"
+            "python -m src.eval.case_studies\n"
+            "```"
+        )
+    else:
+        st.subheader("📊 Зведені метрики")
+        if not summary.empty:
+            cols = st.columns(min(len(summary.columns), 6))
+            for i, col_name in enumerate(summary.columns[:6]):
+                val = summary.iloc[0][col_name]
+                cols[i].metric(col_name.replace("_", " ").title(),
+                               f"{val:.2f}" if isinstance(val, float) else str(val))
+
+        # ---- precision@K timeline -----------------------------------------
+        if not pak.empty:
+            st.subheader("🎯 Precision@K по контрольних точках")
+            st.caption(
+                "Для кожної дати беремо топ-K тем зі статусом Rising "
+                "(відсортованих за прогнозом), і дивимося скільки з них "
+                "реально виросли в наступні 8 тижнів. Що ближче до 1.0 — то "
+                "точніший детектор."
+            )
+            fig = go.Figure()
+            for k_val in sorted(pak["K"].unique()):
+                sub = pak[pak["K"] == k_val].sort_values("as_of")
+                fig.add_trace(go.Scatter(
+                    x=sub["as_of"], y=sub["precision"],
+                    mode="lines+markers", name=f"K={int(k_val)}",
+                ))
+            fig.update_layout(
+                yaxis=dict(title="Precision", range=[0, 1.05]),
+                xaxis=dict(title="as_of"),
+                height=380, margin=dict(l=10, r=10, t=20, b=10),
+                legend=dict(orientation="h"),
+            )
+            st.plotly_chart(fig, width="stretch")
+
+        # ---- model comparison --------------------------------------------
+        if not bt_models.empty:
+            st.subheader("⚖️ Порівняння моделей прогнозу (rolling-origin)")
+            st.caption("Усереднені метрики по 12 контрольних точках × N тем.")
+            for kind in bt_models["series_kind"].unique():
+                sub = bt_models[bt_models["series_kind"] == kind].copy()
+                sub = sub.sort_values("MAE")
+                st.markdown(f"**{kind.title()}**")
+                st.dataframe(sub.reset_index(drop=True), width="stretch")
+                fig = go.Figure(go.Bar(
+                    x=sub["model"], y=sub["MAE"],
+                    marker_color=PALETTE[:len(sub)],
+                    text=sub["MAE"].round(2), textposition="outside",
+                ))
+                fig.update_layout(
+                    title=f"MAE по моделях — {kind}",
+                    height=320, margin=dict(l=10, r=10, t=40, b=10),
+                )
+                st.plotly_chart(fig, width="stretch")
+
+        # ---- detections explorer ------------------------------------------
+        st.subheader("🔍 Усі детекції")
+        st.caption(
+            "Кожен рядок — статус однієї теми/ключового слова в одну з "
+            "контрольних точок, з фактичним приростом у наступні 8 тижнів."
+        )
+
+        det_view = pd.DataFrame()
+        if not bt_topics.empty:
+            t = bt_topics.copy()
+            t["channel"] = "topic"
+            t["label"] = t["keywords"].fillna("").str.slice(0, 50)
+            det_view = pd.concat([det_view, t], ignore_index=True)
+        if not bt_trends.empty:
+            tr = bt_trends.copy()
+            tr["channel"] = "trend"
+            tr["label"] = tr["keyword"]
+            tr["ts_growth"] = tr.get("gt_growth")
+            det_view = pd.concat([det_view, tr], ignore_index=True)
+
+        if not det_view.empty:
+            available_dates = sorted(det_view["as_of"].dt.date.unique())
+            sel_date = st.select_slider(
+                "Контрольна точка (as_of):",
+                options=available_dates,
+                value=available_dates[-1],
+            )
+            day = det_view[det_view["as_of"].dt.date == sel_date]
+            display_cols = [c for c in [
+                "channel", "label", "status", "momentum_pct",
+                "forecast_pct", "ts_growth", "actually_grew",
+            ] if c in day.columns]
+            day_show = day[display_cols].sort_values(
+                "forecast_pct" if "forecast_pct" in day.columns else "momentum_pct",
+                ascending=False,
+            ).reset_index(drop=True)
+            st.dataframe(day_show, width="stretch", hide_index=True)
+
+        # ---- case studies -------------------------------------------------
+        if not cases.empty:
+            st.subheader("📚 Кейс-стаді")
+            st.caption(
+                "Найвиразніші приклади — успішні детекції, провали, спайки. "
+                "Графіки автоматично згенеровані з історичних даних."
+            )
+            st.dataframe(cases, width="stretch", hide_index=True)
+            for _, row in cases.iterrows():
+                img_path = CASES_DIR / row["image"]
+                if img_path.exists():
+                    st.image(str(img_path), caption=f"{row['label']} ({row['kind']})")
+

@@ -1,0 +1,10 @@
+channel,id,label,kind,n_detections,n_rising,first_rising_as_of,first_rising_growth,max_growth,image
+topic,8,"fashion, dress, say, film, prada, red, paris, des...",success,12,2,2026-03-01,81.333,81.333,topic_08_fashion_dress_say.png
+topic,1,"idea, perfect, design, feel, space, create, char,...",success,12,4,2025-05-01,1.0,42.017,topic_01_idea_perfect_desig.png
+topic,14,"dress, like, shirt, feel, jean, good, trouser, pa...",success,12,3,2025-07-01,5.0,41.913,topic_14_dress_like_shirt.png
+topic,16,,success,12,6,2025-05-01,0.0,40.0,topic_16_.png
+topic,13,"model, dress, fashion, vintage, sexy, nude, pin, ...",extra,12,2,2025-10-01,2.0,29.333,topic_13_model_dress_fashio.png
+topic,9,"fashion, say, brand, new, industry, company, year...",extra,12,5,2025-07-01,2.0,26.411,topic_09_fashion_say_brand.png
+trend,cottagecore,cottagecore,success,12,1,2026-02-01,1.528,1.528,cottagecore.png
+trend,quiet luxury,quiet luxury,success,12,2,2026-03-01,0.264,1.487,quiet_luxury.png
+trend,y2k fashion,y2k fashion,extra,12,3,2025-05-01,-0.129,1.17,y2k_fashion.png

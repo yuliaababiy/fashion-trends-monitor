@@ -1,0 +1,21 @@
+topic_id,keywords,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
+9,"fashion, say, brand, new, industry, company, year, week, vogue, designer, business, include, sustainable, fur, global",0.25,0.65,-61.8,0.94,275.8,Rising,LSTM
+12,"say, fashion, clothe, work, brand, people, year, like, think, want, thing, new, clothing, sell, time",0.12,0.5,-75.0,0.39,214.2,Rising,LSTM
+14,"dress, like, shirt, feel, jean, good, trouser, pair, work, shoe, think, day, way, want, jacket",0.12,0.35,-63.9,0.37,198.1,Rising,LSTM
+1,"idea, perfect, design, feel, space, create, char, stylish, garden, beautifully, ideas, like, room, outdoor, color",0.25,0.15,62.5,0.55,119.1,Rising,LSTM
+18,,0.12,0.15,-18.8,0.19,53.1,Rising,LSTM
+0,"char, ootd, new, goth, game, april, photo, streetwear, nail, old, star, selfie, denim, netflix, gothic",0.75,0.96,-22.0,1.03,37.6,Rising,LSTM
+6,"hair, skin, beauty, like, product, good, makeup, face, say, time, use, day, feel, dry, year",0.88,0.85,3.4,1.14,30.8,Rising,LSTM
+4,"say, fashion, people, like, trend, man, year, woman, time, new, see, bag, think, way, come",1.12,2.5,-55.0,1.43,27.5,Rising,LSTM
+16,,0.12,0.12,8.3,0.16,25.3,Rising,LSTM
+7,"sale, char, size, chanel, price, brand, deal, new, free, gap, good, find, shipping, year, store",0.62,0.38,62.5,0.71,13.0,Stable,LSTM
+11,"art, darkacademia, music, char, day, olivia, vintage, year, new, rodrigo, commission, fashion, hat, culture, love",1.12,1.0,12.5,1.27,12.9,Stable,LSTM
+3,"fashion, designer, brand, year, collection, design, week, catwalk, say, new, gucci, creative, director, luxury, dress",0.12,0.04,225.0,0.08,-36.9,Declining,LSTM
+5,"thrifte, vintage, book, cottagecore, dark, char, academia, thrift, wall, art, find, floral, today, advertisements, cotta",1.12,0.92,21.9,0.69,-39.0,Declining,LSTM
+17,,0.62,0.58,8.3,0.21,-66.0,Declining,LSTM
+8,"fashion, dress, say, film, prada, red, paris, designer, new, black, year, like, devil, woman, chanel",0.12,0.12,8.3,0.04,-70.0,Declining,LSTM
+2,"fashion, gala, met, year, culture, westwood, designer, new, say, arts, char, week, time, australian, night",0.25,0.08,225.0,0.0,-98.3,Declining,LSTM
+10,"char, spring, fashion, summer, shoe, trend, short, new, denim, print, coachella, story, dress, season, jean",0.0,0.12,-100.0,0.26,,Declining,LSTM
+13,"model, dress, fashion, vintage, sexy, nude, pin, year, nsfw, sparkle, day, porn, designer, say, coveti",0.0,0.27,-100.0,0.07,,Declining,LSTM
+15,"like, fashion, link, thread, good, culture, picture, char, newspaper, arthistory, dress, album, answer, know, item",0.0,0.12,-100.0,0.21,,Declining,LSTM
+19,,0.0,0.27,-100.0,0.25,,Declining,LSTM

@@ -1,0 +1,2 @@
+rising_total,rising_hits,rising_precision,recall,actual_growers_n,precision_at_1,precision_at_3,precision_at_5,precision_at_10
+104,74,0.712,0.46,161,0.765,0.667,0.647,0.633

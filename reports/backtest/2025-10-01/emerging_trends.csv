@@ -1,0 +1,4 @@
+keyword,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
+cottagecore,20.0,17.96,11.3,18.48,-7.6,Stable,LSTM
+y2k fashion,27.5,19.12,43.9,25.26,-8.2,Stable,LSTM
+quiet luxury,46.88,18.85,148.7,27.67,-41.0,Declining,LSTM
