@@ -2,3 +2,11 @@ keyword,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status
 y2k fashion,31.5,29.92,5.3,26.37,-16.3,Declining,LSTM
 quiet luxury,72.88,49.19,48.1,60.03,-17.6,Declining,LSTM
 cottagecore,29.5,24.15,22.1,22.82,-22.6,Declining,LSTM
+tomato girl,70.75,36.38,94.5,,,Rising,LSTM
+coastal grandmother,10.62,6.08,74.8,,,Rising,LSTM
+gorpcore,54.0,37.54,43.9,,,Rising,LSTM
+barbiecore,3.5,2.96,18.2,,,Rising,LSTM
+office siren,25.25,23.42,7.8,,,Stable,LSTM
+streetwear,44.12,41.65,5.9,,,Stable,LSTM
+coquette,12.12,12.31,-1.5,,,Stable,LSTM
+mob wife,11.38,12.0,-5.2,,,Stable,LSTM
