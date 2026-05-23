@@ -35,6 +35,10 @@ CASES_DIR = REPORTS_DIR / "case_studies"
 
 STATUS_COLORS = {"Rising": "#2ca02c", "Stable": "#7f7f7f",
                  "Declining": "#d62728", "Unknown": "#cccccc"}
+STATUS_LABELS_UA = {"Rising": "Зростає", "Stable": "Стабільний",
+                    "Declining": "Спадає", "Unknown": "Невідомо"}
+CASE_KIND_UA = {"success": "успішний", "failure": "помилковий",
+                "extra": "додатковий"}
 
 
 def _pick_cases(det: pd.DataFrame, max_cases: int) -> list[dict]:
@@ -99,7 +103,8 @@ def _draw_case(
 
     fig, ax = plt.subplots(figsize=(11, 4.5))
     ax.plot(sub_gt["date"], sub_gt["interest"],
-            color="#1f77b4", linewidth=1.6, label="Google Trends interest")
+            color="#1f77b4", linewidth=1.6,
+            label="Інтерес Google Trends")
     ax.fill_between(sub_gt["date"], 0, sub_gt["interest"],
                     color="#1f77b4", alpha=0.08)
 
@@ -114,21 +119,21 @@ def _draw_case(
         first_rising = rising.iloc[0]
         ax.axvline(first_rising["as_of"], color="#2ca02c",
                    linewidth=2.0, linestyle="--",
-                   label=f"First Rising: {first_rising['as_of'].date()}")
+                   label=f"Перший сигнал зростання: {first_rising['as_of'].date()}")
         # Highlight evaluation horizon.
         end = first_rising["as_of"] + pd.Timedelta(weeks=horizon_weeks)
         ax.axvspan(first_rising["as_of"], end,
                    color="#2ca02c", alpha=0.10,
-                   label=f"+{horizon_weeks}w evaluation window")
+                   label=f"Вікно перевірки: +{horizon_weeks} тижнів")
 
-    title = f"Case: {keyword}  ({kind})"
+    title = f"Кейс: {keyword} ({CASE_KIND_UA.get(kind, kind)})"
     if "gt_growth" in sub_det.columns and rising is not None and not rising.empty:
         first = rising.iloc[0]
         if pd.notna(first.get("gt_growth")):
-            title += f"  -  observed +{first['gt_growth']*100:.0f}% over {horizon_weeks}w"
+            title += f" - спостережене зростання +{first['gt_growth']*100:.0f}% за {horizon_weeks} тижнів"
     ax.set_title(title, fontsize=12, loc="left")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("GT interest (0-100)")
+    ax.set_xlabel("Дата")
+    ax.set_ylabel("Інтерес Google Trends (0-100)")
     ax.grid(True, alpha=0.25)
 
     # Custom legend (status colours + lines).
@@ -137,8 +142,9 @@ def _draw_case(
         if (sub_det["status"] == status_name).any():
             from matplotlib.lines import Line2D
             handles.append(Line2D([0], [0], color=color, linewidth=2,
-                                  alpha=0.6, label=status_name))
-            labels.append(status_name)
+                                  alpha=0.6,
+                                  label=STATUS_LABELS_UA.get(status_name, status_name)))
+            labels.append(STATUS_LABELS_UA.get(status_name, status_name))
     ax.legend(handles, labels, loc="upper left", fontsize=9, frameon=True)
 
     fig.tight_layout()
@@ -210,7 +216,8 @@ def _draw_topic_case(
 
     fig, ax = plt.subplots(figsize=(11, 4.5))
     ax.plot(sub_ts["period"], sub_ts["count"],
-            color="#1f77b4", linewidth=1.6, label="Topic count (weekly)")
+            color="#1f77b4", linewidth=1.6,
+            label="Кількість документів теми за тиждень")
     ax.fill_between(sub_ts["period"], 0, sub_ts["count"],
                     color="#1f77b4", alpha=0.08)
 
@@ -219,21 +226,21 @@ def _draw_topic_case(
         ax.axvline(r["as_of"], color=c, alpha=0.35, linewidth=0.8)
 
     rising = sub_det[sub_det["status"] == "Rising"]
-    title = f"Topic #{tid} ({case['kind']}): {case['label']}"
+    title = f"Тема #{tid} ({CASE_KIND_UA.get(case['kind'], case['kind'])}): {case['label']}"
     if not rising.empty:
         first_rising = rising.iloc[0]
         ax.axvline(first_rising["as_of"], color="#2ca02c",
                    linewidth=2.0, linestyle="--",
-                   label=f"First Rising: {first_rising['as_of'].date()}")
+                   label=f"Перший сигнал зростання: {first_rising['as_of'].date()}")
         end = first_rising["as_of"] + pd.Timedelta(weeks=horizon_weeks)
         ax.axvspan(first_rising["as_of"], end,
                    color="#2ca02c", alpha=0.10,
-                   label=f"+{horizon_weeks}w evaluation window")
+                   label=f"Вікно перевірки: +{horizon_weeks} тижнів")
         if pd.notna(first_rising.get("ts_growth")):
-            title += f"  -  observed {first_rising['ts_growth']*100:+.0f}% over {horizon_weeks}w"
+            title += f" - спостережена зміна {first_rising['ts_growth']*100:+.0f}% за {horizon_weeks} тижнів"
     ax.set_title(title, fontsize=12, loc="left")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Posts/week mentioning topic")
+    ax.set_xlabel("Дата")
+    ax.set_ylabel("Документів на тиждень")
     ax.grid(True, alpha=0.25)
 
     handles, labels = ax.get_legend_handles_labels()
@@ -241,8 +248,9 @@ def _draw_topic_case(
     for status_name, color in STATUS_COLORS.items():
         if (sub_det["status"] == status_name).any():
             handles.append(Line2D([0], [0], color=color, linewidth=2,
-                                  alpha=0.6, label=status_name))
-            labels.append(status_name)
+                                  alpha=0.6,
+                                  label=STATUS_LABELS_UA.get(status_name, status_name)))
+            labels.append(STATUS_LABELS_UA.get(status_name, status_name))
     ax.legend(handles, labels, loc="upper left", fontsize=9, frameon=True)
 
     fig.tight_layout()

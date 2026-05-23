@@ -2,11 +2,12 @@
 
 Steps:
 1. Combine title + selftext.
-2. Remove URLs, markdown, HTML, control characters.
-3. Demojize emoji to text tokens.
-4. Filter to English posts (langdetect).
-5. Lemmatize with spaCy, drop stopwords / punctuation / short tokens.
-6. Save cleaned text alongside original metadata.
+2. Drop posts flagged as adult/sensitive by source platforms.
+3. Remove URLs, markdown, HTML, control characters.
+4. Demojize emoji to text tokens.
+5. Filter to English posts (langdetect).
+6. Lemmatize with spaCy, drop stopwords / punctuation / short tokens.
+7. Save cleaned text alongside original metadata.
 
 Usage:
     python -m src.preprocess.cleaner \
@@ -117,6 +118,12 @@ def lemmatize_batch(texts: Iterable[str], nlp, batch_size: int = 64) -> list[str
 def preprocess(df: pd.DataFrame, min_tokens: int = 5) -> pd.DataFrame:
     log.info("Combining title + selftext for %d rows", len(df))
     df = df.copy()
+
+    if "over_18" in df.columns:
+        before = len(df)
+        df = df[~df["over_18"].fillna(False).astype(bool)].reset_index(drop=True)
+        log.info("Dropped %d adult/sensitive posts", before - len(df))
+
     df["raw_text"] = (df["title"].fillna("") + ". " + df["selftext"].fillna("")).str.strip()
 
     log.info("Cleaning raw text")
