@@ -1,6 +1,6 @@
 {
   "best_k": 16,
-  "best_coherence_cv": 0.33819098607375897,
-  "vocabulary_size": 20679,
-  "n_documents": 33713
+  "best_coherence_cv": 0.34247646597938475,
+  "vocabulary_size": 22163,
+  "n_documents": 43686
 }

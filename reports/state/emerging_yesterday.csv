@@ -1,21 +1,17 @@
 topic_id,keywords,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
-11,"vintage, art, photography, retro, dark, cottagecore, fashion, academia, wall, vinyl, floral, portrait, fur, hoodie, prin",259.62,8.54,2940.7,22.12,-91.5,Declining,LSTM
-4,"fashion, culture, arts, beauty, festival, peachy, weekend, music, coachella, jenner, olivia, star, kylie, rodrigo, year",191.25,10.15,1783.5,14.67,-92.3,Declining,LSTM
-2,"new, amazon, game, free, series, week, prime, city, exhibition, end, year, deal, open, find, low",443.62,9.58,4532.2,24.24,-94.5,Declining,LSTM
-8,"story, tell, adventure, day, change, craft, tech, support, big, new, year, right, fashion, climate, develop",217.25,7.23,2904.5,11.24,-94.8,Declining,LSTM
-0,"vintage, movie, new, horror, time, favorite, stream, retro, know, film, book, streaming, netflix, sci, today",228.12,2.69,8373.2,11.63,-94.9,Declining,LSTM
-13,"like, dress, shirt, summer, feel, good, want, jacket, short, wardrobe, jean, find, work, time, suit",141.0,2.04,6817.0,5.61,-96.0,Declining,LSTM
-6,"say, fashion, year, new, week, model, designer, come, woman, time, like, london, old, man, people",133.12,1.58,8342.1,5.07,-96.2,Declining,LSTM
-15,"fashion, brand, luxury, thrifte, designer, clothing, new, store, sell, bag, design, sparkle, clothe, item, year",283.25,4.42,6303.9,10.84,-96.2,Declining,LSTM
-7,"shoe, sneaker, new, good, sale, nike, spring, best, summer, day, pair, foot, shoes, collection, sandal",180.12,6.0,2902.1,5.46,-97.0,Declining,LSTM
-9,"fashion, prada, book, devil, wears, know, get, read, like, world, photo, people, want, time, work",169.38,1.5,11191.7,4.05,-97.6,Declining,LSTM
-16,,146.25,2.35,6133.6,2.86,-98.0,Declining,LSTM
-17,,273.12,1.5,18108.3,5.02,-98.2,Declining,LSTM
-10,"idea, perfect, feel, space, room, create, home, design, stylish, ideas, like, garden, charm, cozy, turn",234.38,2.88,8025.0,4.23,-98.2,Declining,LSTM
-3,"ootd, link, commission, day, purchase, new, receive, mother, product, affiliate, daily, feature, page, gift, earn",183.75,3.31,5455.2,2.54,-98.6,Declining,LSTM
-19,,163.38,2.04,7914.6,2.0,-98.8,Declining,LSTM
-1,"hair, like, skin, good, think, beauty, work, body, makeup, time, need, day, year, feel, thing",130.5,1.69,7611.4,1.23,-99.1,Declining,LSTM
-12,"gala, met, fashion, new, year, taylor, star, carpet, york, art, night, red, swift, monday, dress",233.5,0.73,31852.6,0.9,-99.6,Declining,LSTM
-5,"fashion, dress, red, culture, chanel, arts, carpet, new, trend, black, hat, party, white, event, meet",323.25,4.23,7540.5,0.92,-99.7,Declining,LSTM
-14,"fashion, culture, newspaper, model, vintage, title, original, arts, clickbait, sexy, nude, link, porn, robot, pin",315.12,0.73,43022.4,0.45,-99.9,Declining,LSTM
-18,,507.12,0.27,188260.7,0.12,-100.0,Declining,LSTM
+4,"hair, say, thrifte, skin, like, find, good, thing, year, man, come, new, face, time, product",263.75,6.77,3796.3,30.41,-88.5,Declining,LSTM
+15,"fashion, shirt, clothe, dress, jacket, like, black, ootd, cotton, design, way, woman, say, work, suit",287.38,17.15,1575.3,21.12,-92.7,Declining,LSTM
+0,"idea, perfect, feel, space, room, like, ideas, home, design, create, stylish, outdoor, charm, turn, cozy",356.75,6.88,5081.8,19.08,-94.7,Declining,LSTM
+14,"fashion, say, brand, designer, year, collection, trend, week, new, industry, people, come, include, luxury, paris",351.25,8.04,4269.6,15.11,-95.7,Declining,LSTM
+9,"vintage, fashion, original, title, art, newspaper, clickbait, photography, music, retro, vinyl, view, record, song, cult",320.38,2.58,12332.5,10.54,-96.7,Declining,LSTM
+5,"like, dress, shoe, good, summer, want, feel, new, find, know, pair, brand, short, size, sneaker",522.38,13.38,3802.8,15.44,-97.0,Declining,LSTM
+10,"weekend, today, sale, day, new, friend, plan, good, big, hat, year, happy, amazon, find, fashion",193.25,3.0,6341.7,5.5,-97.2,Declining,LSTM
+12,"new, day, story, mother, gucci, tell, book, change, support, year, fashion, campaign, right, write, world",300.75,4.65,6362.4,3.84,-98.7,Declining,LSTM
+7,"new, young, year, fucking, london, old, louis, release, appear, york, music, time, vuitton, daughter, couple",286.75,1.5,19016.7,3.28,-98.9,Declining,LSTM
+11,"beauty, fashion, peachy, design, new, summer, game, art, spring, makeup, free, good, font, use, nail",286.88,3.85,7358.7,3.09,-98.9,Declining,LSTM
+2,"feature, final, yard, auto, new, car, adida, secret, minnesota, track, parts, line, visit, mile, welcome",150.12,0.62,24295.3,1.23,-99.2,Declining,LSTM
+3,"pant, like, love, time, day, think, good, feel, jean, pants, spend, want, cargo, get, ask",224.75,1.85,12074.0,1.54,-99.3,Declining,LSTM
+1,"deal, product, online, shop, learn, site, link, select, daily, purchase, store, earn, curate, page, year",241.62,1.08,22336.6,1.48,-99.4,Declining,LSTM
+6,"know, amazon, year, time, read, thing, set, favorite, color, cool, friday, right, disney, let, mean",212.88,0.58,36798.3,0.75,-99.6,Declining,LSTM
+13,"fashion, culture, arts, gala, met, red, star, carpet, newspaper, dress, festival, film, meet, devil, year",567.38,0.77,73658.8,0.78,-99.9,Declining,LSTM
+8,"link, denim, movie, receive, season, commission, new, affiliate, netflix, summer, spring, jenner, vintage, review, horro",336.75,0.77,43677.5,0.19,-99.9,Declining,LSTM
