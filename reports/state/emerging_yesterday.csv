@@ -1,21 +1,21 @@
 topic_id,keywords,recent_mean,baseline_mean,momentum_pct,forecast_mean,forecast_pct,status,model
-7,"book, season, series, new, kim, summary, today, month, euphoria, kardashian, grand, release, read, sci, anime",219.0,40.27,443.8,49.98,-77.2,Declining,LSTM
-2,"like, good, dress, summer, day, want, shirt, feel, work, think, get, find, thing, love, know",796.88,88.19,803.6,83.9,-89.5,Declining,LSTM
-15,"summer, jean, spring, fashion, denim, dress, trend, pant, weekend, pair, find, fit, leg, short, jeans",274.12,54.77,400.5,28.32,-89.7,Declining,LSTM
-6,"shoe, sneaker, new, pair, sandal, nike, summer, shoes, brand, jane, good, leather, adhd, cute, footwear",304.25,56.12,442.2,27.21,-91.1,Declining,LSTM
-1,"year, say, old, woman, time, people, work, life, new, man, world, face, come, know, use",808.75,54.54,1382.9,53.13,-93.4,Declining,LSTM
-19,"new, world, thrifte, disney, thrift, cup, louis, hotel, explore, york, gucci, vuitton, card, city, pop",267.25,30.65,771.8,17.34,-93.5,Declining,LSTM
-3,"new, olivia, paris, pre, june, rodrigo, collection, summer, open, young, princess, love, kate, season, daze",286.0,37.08,671.4,18.15,-93.7,Declining,LSTM
-10,"ootd, retro, vintage, art, vinyl, game, new, academia, music, record, market, horror, release, band, tech",332.62,29.19,1039.4,19.97,-94.0,Declining,LSTM
-8,"sale, deal, free, amazon, day, clothing, price, shop, pant, shipping, store, include, man, men, code",237.62,35.35,572.3,11.64,-95.1,Declining,LSTM
-11,"idea, room, feel, perfect, space, like, color, design, kitchen, home, ideas, right, wall, cottagecore, bed",330.0,65.73,402.0,13.84,-95.8,Declining,LSTM
-12,"car, magazine, news, week, vintage, fur, line, final, country, welcome, win, time, new, world, sport",313.75,21.92,1331.1,11.11,-96.5,Declining,LSTM
-17,"day, wedding, year, camera, mother, today, gift, come, week, pink, lipa, dua, reissue, pin, celebrate",326.0,44.58,631.3,11.39,-96.5,Declining,LSTM
-0,"film, music, taylor, swift, star, new, red, festival, night, movie, dress, netflix, cannes, illustration, awards",582.88,38.96,1396.0,13.04,-97.8,Declining,LSTM
-16,"bag, shirt, fashion, sustainable, cotton, organic, like, quality, streetwear, herb, shop, high, environmental, stylish, ",397.38,27.35,1353.1,8.18,-97.9,Declining,LSTM
-5,"fashion, vintage, newspaper, culture, beauty, photography, peachy, art, original, designer, clickbait, link, title, tren",526.88,37.81,1293.6,10.47,-98.0,Declining,LSTM
-4,"story, trump, big, tech, tell, fire, support, right, year, climate, read, ground, day, independent, change",191.38,43.12,343.9,3.76,-98.0,Declining,LSTM
-9,"sparkle, link, devil, prada, review, service, wears, website, discover, jewelry, product, purchase, receive, luxury, com",194.38,40.15,384.1,2.99,-98.5,Declining,LSTM
-18,"new, brand, fashion, bridal, york, week, shanghai, black, city, designer, collection, launch, luxury, leather, july",327.12,36.38,799.1,2.67,-99.2,Declining,LSTM
-14,"link, know, knicks, game, commission, new, earn, page, jenner, feature, learn, kylie, time, west, daily",309.0,37.96,714.0,1.03,-99.7,Declining,LSTM
-13,"fashion, culture, arts, gala, met, art, meet, relationship, love, red, star, dress, island, carpet, celebrity",453.62,33.27,1263.5,0.77,-99.8,Declining,LSTM
+7,"book, season, series, new, kim, summary, today, month, euphoria, kardashian, grand, release, read, sci, anime",222.75,40.31,452.6,45.49,-79.6,Declining,LSTM
+2,"like, good, dress, summer, day, want, shirt, feel, work, think, get, find, thing, love, know",815.25,88.27,823.6,83.94,-89.7,Declining,LSTM
+15,"summer, jean, spring, fashion, denim, dress, trend, pant, weekend, pair, find, fit, leg, short, jeans",278.88,54.85,408.5,28.61,-89.7,Declining,LSTM
+6,"shoe, sneaker, new, pair, sandal, nike, summer, shoes, brand, jane, good, leather, adhd, cute, footwear",310.12,56.12,452.7,27.21,-91.2,Declining,LSTM
+3,"new, olivia, paris, pre, june, rodrigo, collection, summer, open, young, princess, love, kate, season, daze",291.38,37.04,686.7,18.09,-93.8,Declining,LSTM
+1,"year, say, old, woman, time, people, work, life, new, man, world, face, come, know, use",832.5,54.46,1428.6,50.75,-93.9,Declining,LSTM
+19,"new, world, thrifte, disney, thrift, cup, louis, hotel, explore, york, gucci, vuitton, card, city, pop",272.75,30.58,792.0,16.5,-94.0,Declining,LSTM
+10,"ootd, retro, vintage, art, vinyl, game, new, academia, music, record, market, horror, release, band, tech",340.75,29.15,1068.8,19.1,-94.4,Declining,LSTM
+11,"idea, room, feel, perfect, space, like, color, design, kitchen, home, ideas, right, wall, cottagecore, bed",335.88,65.73,411.0,14.3,-95.7,Declining,LSTM
+8,"sale, deal, free, amazon, day, clothing, price, shop, pant, shipping, store, include, man, men, code",246.5,35.31,598.1,9.71,-96.1,Declining,LSTM
+12,"car, magazine, news, week, vintage, fur, line, final, country, welcome, win, time, new, world, sport",320.38,21.96,1358.8,11.24,-96.5,Declining,LSTM
+17,"day, wedding, year, camera, mother, today, gift, come, week, pink, lipa, dua, reissue, pin, celebrate",333.25,44.5,648.9,11.39,-96.6,Declining,LSTM
+0,"film, music, taylor, swift, star, new, red, festival, night, movie, dress, netflix, cannes, illustration, awards",593.38,38.96,1423.0,13.16,-97.8,Declining,LSTM
+5,"fashion, vintage, newspaper, culture, beauty, photography, peachy, art, original, designer, clickbait, link, title, tren",538.25,37.85,1322.2,10.13,-98.1,Declining,LSTM
+4,"story, trump, big, tech, tell, fire, support, right, year, climate, read, ground, day, independent, change",194.88,43.12,352.0,3.76,-98.1,Declining,LSTM
+16,"bag, shirt, fashion, sustainable, cotton, organic, like, quality, streetwear, herb, shop, high, environmental, stylish, ",405.25,27.27,1386.1,7.46,-98.2,Declining,LSTM
+9,"sparkle, link, devil, prada, review, service, wears, website, discover, jewelry, product, purchase, receive, luxury, com",197.38,40.15,391.5,2.99,-98.5,Declining,LSTM
+18,"new, brand, fashion, bridal, york, week, shanghai, black, city, designer, collection, launch, luxury, leather, july",334.25,36.38,818.7,2.67,-99.2,Declining,LSTM
+14,"link, know, knicks, game, commission, new, earn, page, jenner, feature, learn, kylie, time, west, daily",314.5,37.96,728.5,1.67,-99.5,Declining,LSTM
+13,"fashion, culture, arts, gala, met, art, meet, relationship, love, red, star, dress, island, carpet, celebrity",461.88,33.42,1281.9,0.77,-99.8,Declining,LSTM
